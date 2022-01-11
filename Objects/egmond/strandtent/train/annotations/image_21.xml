@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>image_21.jpg</filename>
+	<path>C:\Coastal Citizen Science\CoastSnap\Python\Object Detection\strandtent\train\images\image_21.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4032</width>
+		<height>2268</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>strandtent</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3111</xmin>
+			<ymin>711</ymin>
+			<xmax>3468</xmax>
+			<ymax>857</ymax>
+		</bndbox>
+	</object>
+</annotation>

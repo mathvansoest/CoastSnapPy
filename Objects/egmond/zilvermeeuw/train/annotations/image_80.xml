@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>image_80.jpg</filename>
+	<path>C:\Coastal Citizen Science\CoastSnap\Python\Object Detection\zilvermeeuw\train\images\image_80.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4608</width>
+		<height>2128</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>zilvermeeuw</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>9</xmin>
+			<ymin>1039</ymin>
+			<xmax>966</xmax>
+			<ymax>1584</ymax>
+		</bndbox>
+	</object>
+</annotation>
