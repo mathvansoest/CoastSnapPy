@@ -130,8 +130,3 @@ class CSdetection:
                 
         else:
             print('target_mask.png already exists')
-        
-    
-    
-    
-

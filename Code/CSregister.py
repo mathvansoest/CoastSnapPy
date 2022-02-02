@@ -5,8 +5,6 @@ Created on Wed Nov 17 14:30:40 2021
 @author: 4105664
 """
 
-import datetime
-import shutil
 from enum import Enum
 from functools import cached_property
 from itertools import product
@@ -16,19 +14,8 @@ import attr
 import cv2
 import os
 import numpy as np
-import pandas as pd
 import typer
 from loguru import logger
-from moviepy.editor import *
-
-
-from utils import divide_chunks
-from CSdetection import CSdetection
-from CSorganizer import CSorganizer
-from CSreadDB import CSinput
-from CSreadIm import CSim
-
-import matplotlib.pyplot as plt
 
 class Detection:
     def __init__(self, ObjectsPath, Objects, DetectionModels, ThresholdPercentage=20):
@@ -45,7 +32,7 @@ class Image:
 
     path = attr.ib()
 
-    def create_keypoints_descriptors(self, max_features=1000):
+    def create_keypoints_descriptors(self, max_features=5000):
         """
         Create keypoints and descriptors used for feature matching
         """
@@ -390,119 +377,6 @@ class Warp(str, Enum):
 
     perspective = "perspective"
     affine = "affine"
-
-def register_raw_imgs(
-    site_folder: str,
-    chunk_size: int = typer.Option(50, help="no. of imgs in each batch"),
-    debug: bool = typer.Option(False, help="save debug images?"),
-    overwrite: bool = typer.Option(False, help="overwrite already registered images?"),
-    warp: Warp = typer.Option(
-        Warp.perspective, case_sensitive=False, help="type of transformation to apply"
-    ),
-):
-
-    """
-    Registers raw images to target images.
-    """
-
-    # TODO Check if target folders exist
-    # TODO Check if folders exist
-
-    # Define paths
-    raw_folder = os.path.join(site_folder, "raw")
-    output_folder = os.path.join(site_folder, "registered")
-    debug_folder = os.path.join(site_folder, "debug")
-    objects_folder = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond'
-    target_mask_path = os.path.join(site_folder, "target/target_mask.png")
-    registration_stats_csv = os.path.join(site_folder, "registered/_stats.csv")
-
-    # Get all raw images to process
-    raw_img_paths = [x for x in Path(raw_folder).glob("*.jpg")]
-    logger.info(f"Found {len(raw_img_paths)} raw images")
-
-    # If cannot overwrite, check which files already exist and remove from images to
-    # process
-    # TODO Check for registered images in filtered folder
-    if not overwrite:
-        registered_imgs = [
-            x.name.replace("-registered", "") for x in Path(output_folder).glob("*.jpg")
-        ]
-        raw_img_paths = [x for x in raw_img_paths if x.name not in registered_imgs]
-        logger.info(
-            f"Overwriting disabled. {len(raw_img_paths)} raw images left to process"
-        )
-
-    chunked_paths = list(divide_chunks(raw_img_paths, chunk_size))
-
-    logger.info(
-        f"Registering {len(raw_img_paths)} images in {len(chunked_paths)} "
-        f"chunks with {chunk_size} in each chunk"
-    )
-
-    # Process raw images in chunks
-    for n, raw_img_paths_chunk in enumerate(chunked_paths):
-
-        logger.info(f"Registering chunk {n} of {len(chunked_paths)}")
-
-        # Get all target images
-        target_img_paths = [x for x in Path(site_folder, "target").glob("target*.jpg")]
-        targets = []
-        for target_img_path in target_img_paths:
-            target = Image(target_img_path)
-            target.load_array()
-            target.add_mask_from_file(target_mask_path)
-            target.create_keypoints_descriptors()
-            targets.append(target)
-            
-        # Initialize Detection
-        detect = CSdetection(raw_folder, ['strandtent','zilvermeeuw'], 
-                                         ['detection_model-ex-016--loss-0008.891.h5',
-                                          'detection_model-ex-005--loss-0016.168.h5'], 
-                                          objects_folder)
-
-        # Read raw images
-        raws = [Image(x) for x in raw_img_paths_chunk]
-        for r in raws:
-            r = os.path.basename(r)
-            r.load_array()
-            r.resize(height=target.height, width=target.width)
-            mask = detect.detector(r)
-            r.add_mask_from_file(mask)
-            r.create_keypoints_descriptors()
-
-        image_matches = [
-            ImageComparer(r, t, warp) for r, t in product(raws, targets)
-        ]
-
-        # Evaluate matches between targets in raws
-        while len(raws) > 0:
-
-            # Find best match and apply warp
-            best_match = min(image_matches, key=lambda x: x.score)
-
-            # If the best match can't be registered, remove raw image from matches
-            # and continue
-            if not hasattr(best_match, "registered_array"):
-                # If cannot do warp, remove raw image from matches and continue
-                image_matches = [
-                    x for x in image_matches if x.raw_image != best_match.raw_image
-                ]
-                raws = [x for x in raws if x != best_match.raw_image]
-                continue
-
-            best_match.save_registered_image(folder=output_folder)
-
-            if debug:
-                best_match.save_debug_image(folder=debug_folder)
-
-            # Output stats to file
-            # registration_stats.write_line(best_match.stats_str)
-
-            # Move best match from raw image to a target image
-            image_matches = [
-                x for x in image_matches if x.raw_image != best_match.raw_image
-            ]
-            raws = [x for x in raws if x != best_match.raw_image]
             
 def register_img(
     image: str,
@@ -523,18 +397,6 @@ def register_img(
 
     # TODO Check if target folders exist
     # TODO Check if folders exist
-
-    # Define paths
-    # raw_folder = os.path.join(site_folder, "raw")
-    # output_folder = os.path.join(site_folder, "registered")
-    # debug_folder = os.path.join(site_folder, "debug")
-    # objects_folder = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond'
-    # target_mask_path = os.path.join(site_folder, "target/target_mask.png")
-
-    # logger.info(f"Found {len(raw_img_paths)} raw images")
-
-    # If cannot overwrite, check which files already exist and remove from images to
-    # process
     # TODO Check for registered images in filtered folder
 
     targetMask = os.path.join(targetPath,'target_mask.png')
@@ -568,68 +430,3 @@ def register_img(
     return cv2.cvtColor(best_match.registered_array, cv2.COLOR_BGRA2RGB)
 
             
-if __name__ == '__main__':
-    # print(os.getcwd())
-    # site_folder = 'C:/Coastal Citizen Science/CoastSnapPy/CSmaskMultipleTarget/egmond'
-    
-    # test_im = Image(Path(site_folder, "target","target_image02.jpg"))
-    # test_im.load_array()
-    # # test_im.add_mask_from_file('C:/Coastal Citizen Science/CoastSnapPy/CSmaskMultipleTarget/egmond/target/target_mask.png')
-    
-    # testmask = cv2.imread('C:/Coastal Citizen Science/CoastSnapPy/CSmaskMultipleTarget/egmond/target/target_mask.png', cv2.IMREAD_UNCHANGED)
-    
-    # testmask = testmask[:,:,-1]
-    
-    
-    # array_gray = cv2.cvtColor(test_im.array, cv2.COLOR_BGR2GRAY)
-    # orb = cv2.ORB_create(5000)
-    # keypoints, descriptors = orb.detectAndCompute(array_gray, mask = testmask)
-    
-    #%%
-    # register_raw_imgs('egmond', chunk_size=1,warp='perspective')
-#%% Set up with use of CSorganizer
-    
-    sitename = 'egmond'
-    new_im = 'test1.jpg'
-    
-    organizer = CSorganizer(new_im,sitename)
-    organizer.check_time()
-    organizer.check_directories()
-    organizer.gen_paths()
-    organizer.process_new_image()
-    
-    imname = organizer.NewImageName
-    
-    # Define the path, names of objects to be detected and their corresponding detection model names
-    objects = ['strandtent',
-               'zilvermeeuw']
-    detection = ['detection_model-ex-016--loss-0008.891.h5',
-                 'detection_model-ex-005--loss-0016.168.h5']
-    # Define the percentage threshold for object detection
-    detectionThreshold = 5 #[%]
-    
-    #%% Read Database
-    CSinput = CSinput(organizer.pathDB, sitename)
-    
-    #%% Input Image
-    
-    # Read the image data
-    im = CSim(imname, path=organizer.pathIm)
-    # Detect the specified for detection with the corresponding models
-    print(organizer.pathIm)
-    imDetect = CSdetection(imPath=organizer.pathIm,objPath='C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond',Objects = objects, DetectionModels = detection)
-    imDetect.detector(organizer.NewImageName)
-    # Mask everything but the detected stable features
-    im.mask = imDetect.mask(addBoundary=False)
-    
-    im.reg = register_img('test_img1.jpg',
-                 targetPath = r'C:\Coastal Citizen Science\CoastSnapPy\CSmaskMultipleTarget\egmond\target',
-                 mask=im.mask,
-                 warp='perspective')
-    
-    #%%
-    ref = plt.imread('target_image23.jpg')
-    
-    plt.imshow(ref)
-    plt.figure()
-    plt.imshow(im.reg)

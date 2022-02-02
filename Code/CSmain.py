@@ -25,7 +25,7 @@ if __name__ == '__main__':
     #%% Set up with use of CSorganizer
     
     sitename = 'egmond'
-    new_im = 'test15.jpg'
+    new_im = 'test2.jpg'
     
     organizer = CSorganizer(new_im,sitename)
     organizer.check_time()

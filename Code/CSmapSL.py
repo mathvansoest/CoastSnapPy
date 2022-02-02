@@ -9,11 +9,6 @@ Created by: Math van Soest
 """
 import numpy as np
 import numpy.matlib
-from CSreadDB import CSinput
-from CSreadIm import CSim
-from CSrectification import CSrectification
-import cv2 as cv
-import matplotlib.pyplot as plt
 import scipy.io
 import os
 from skimage.measure import profile_line
@@ -180,6 +175,7 @@ class CSmapSL():
             sly = np.zeros((1,self.transectsY.shape[1]))
             angle =np.empty(slx.shape)
             
+            # Select most shoreward RmB threshold if multiple are detected along transect
             for i in range(slx.shape[1]):
                 
                 angle = np.arctan(np.diff(self.transectsY[:,i]/np.diff(self.transectsX[:,i])))
@@ -191,7 +187,7 @@ class CSmapSL():
                 I = np.array(np.where((points_rot[:,1]>-1) & (points_rot[:,1]<1) & (points_rot[:,0]>0) & (points_rot[:,0]<max_distance)))
                 
                 if  np.array(I).size == 0:
-                    print('I = empty')
+                    I = float("NaN")
                 else:    
                     Imin = np.argmin(points_rot[I,0])
                     slx[0,i]= slpoints[I[0,Imin],0]
