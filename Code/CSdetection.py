@@ -9,7 +9,6 @@ Created by: Math van Soest
 """
 
 import cv2
-import matplotlib.pyplot as plt
 import os
 from imageai.Detection.Custom import CustomObjectDetection
 import numpy as np
@@ -59,8 +58,11 @@ class CSdetection:
                 for j in range(len(self.detections)):
                     DetectDict = self.detections[j]
                     self.Prob[j]=DetectDict['percentage_probability']
-                    
+                
+                # Select only the detected object with the highest probability    
                 detection = self.detections[np.argmax(self.Prob)]
+                
+                # 
                 self.points[self.Objects.index(Object),:] = np.array(detection.get('box_points', 'Value'))
                 
                 print(Object + ' was detected with a probability of ' + "%.2f" % max(self.Prob) + '%')
@@ -110,7 +112,7 @@ class CSdetection:
             
         return self.imMaskMat
     
-    def create_mask_target(self, maskPath):
+    def create_mask_target(self, targetDir, maskPath):
         
         ImList = os.listdir(self.imPath)
         Im = ImList[0]
@@ -129,25 +131,6 @@ class CSdetection:
         else:
             print('target_mask.png already exists')
         
-    def create_mask_new(self,Im):
-        print('bla')
-
-                      
-if __name__ == '__main__':
-
-    targetDir = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap2\Target\egmond\Images'
-    maskDir = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap2\Target\egmond\Mask'
-    
-    Objects = ['strandtent',
-               'zilvermeeuw']
-    DetectionModels = ['detection_model-ex-016--loss-0008.891.h5',
-                       'detection_model-ex-005--loss-0016.168.h5']
-    objPath = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap2\Objects\egmond'
-
-    tarDetect = CSdetection(targetDir, Objects, DetectionModels, objPath)
-        
-    tarDetect.create_mask_target(maskDir)
-
     
     
     

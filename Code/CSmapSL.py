@@ -39,23 +39,25 @@ class CSmapSL():
             # and appends these to the variable P.
             for i in range(self.transectsX.shape[1]):
                 
-                    # In the original CoastSnap MATLAB code 3 things are passed to the function "improfile" to sample pixels along the transects:
-                    #  1 - the georectified image;
-                    #  2 - the world coordinates of the image's limits;
-                    #  3 - the world coordinates (x and y) corresponding to the ends of each transect.
-                    #
-                    # The equivalent Python function is "profile_line", however, this function does not allow the world coordinates of the image's limits to be passed like is done in MATLAB.
-                    # This means that instead of using world coordinates to define the transect ends, the indices of the corresponding pixels in the image array are required.
-                    # See (Heaney, 2021, pages 56 and 57) for full visual explaination.
-                    # This means only 2 things are passed to profile_line:
-                    # 1 - the georectified image;
-                    # 2 - the indices of the image array corresponding to the ends of each transect.
-                    # Thus, the world coordinates of the transect endpoints must be converted to equivalent indices of the image array.
-                    # 
-                    # Note: This conversion will depend on the extremities of the georectified image which are defined in the CoastSnap Database for a particular site. The relevant cells
-                    # of the Database, under the sub-heading Rectification Settings are:
-                    #               Xlimit left; Xlimit right; Ylimit lower; Ylimit upper.
-                    # The numbers used below are the values of the above from the Manly Database.
+                    '''                
+                    In the original CoastSnap MATLAB code 3 things are passed to the function "improfile" to sample pixels along the transects:
+                      1 - the georectified image;
+                      2 - the world coordinates of the image's limits;
+                      3 - the world coordinates (x and y) corresponding to the ends of each transect.
+                    
+                    The equivalent Python function is "profile_line", however, this function does not allow the world coordinates of the image's limits to be passed like is done in MATLAB.
+                    This means that instead of using world coordinates to define the transect ends, the indices of the corresponding pixels in the image array are required.
+                    See (Heaney, 2021, pages 56 and 57) for full visual explaination.
+                    This means only 2 things are passed to profile_line:
+                    1 - the georectified image;
+                    2 - the indices of the image array corresponding to the ends of each transect.
+                    Thus, the world coordinates of the transect endpoints must be converted to equivalent indices of the image array.
+                    
+                    Note: This conversion will depend on the extremities of the georectified image which are defined in the CoastSnap Database for a particular site. The relevant cells
+                    of the Database, under the sub-heading Rectification Settings are:
+                                  Xlimit left; Xlimit right; Ylimit lower; Ylimit upper.
+                    The numbers used below are the values of the above from the Manly Database.
+                    '''
                     ##MATH## Given the info above, the values below should be linked to the Database and not be fixed at the same values as the Manly site.
 
                     # M1 is the the row index of the trasect start point.
@@ -170,10 +172,12 @@ class CSmapSL():
             xyz_x = xyz_x*(np.array(abs(CSinput.xlim[0]-CSinput.xlim[1]))/CSrect.im.shape[1])+np.array(CSinput.xlim[0])
             xyz_y = xyz_y*(np.array(abs(CSinput.ylim[0]-CSinput.ylim[1]))/CSrect.im.shape[0])
             
-            slx = np.zeros((1,self.transectsX.shape[1]))
-            sly = np.zeros((1,self.transectsY.shape[1]))
+            # Stack coordinates
             slpoints = np.vstack((xyz_x,xyz_y)).T
             
+            # Initialize empty arrays
+            slx = np.zeros((1,self.transectsX.shape[1]))
+            sly = np.zeros((1,self.transectsY.shape[1]))
             angle =np.empty(slx.shape)
             
             for i in range(slx.shape[1]):
@@ -198,32 +202,3 @@ class CSmapSL():
             self.UTMx = slx + CSinput.x0
             self.UTMy = sly + CSinput.y0
             self.xymat = {'xyz': np.hstack([np.rot90(slx), np.rot90(sly)])}
-            # self.UTMmat
-            
-    
-if __name__ == '__main__':
-    
-    # Define path to location of the CoastSnap Database
-    path = r'C:\Coastal Citizen Science\CoastSnap\Database\CoastSnapDB.xlsx'
-    sitename = 'egmond'
- 
-    CSinput = CSinput(path, sitename)
-    
-    UV = np.array([[2683.07992933693,1994.84531801943,2462.97897751479,],
-                   [961.109189295402,1148.93483322320,990.960816201514]])
-    
-    imname = '1583622000.Sun.Mar.08_00_00_00.CET.2020.egmond.snap.FroukjeHajer.jpg'
-    
-    im = CSim(imname)
-    
-    rect = CSrectification(CSinput, im, UV)
-    
-    SL = CSmapSL('SLtransects_egmond.mat',CSinput,im,rect)
-    
-    plt.figure(11)
-    plt.plot(SL.x[0,:],SL.y[0,:], color = 'r')
-    plt.imshow(rect.im, extent = (min(CSinput.x), max(CSinput.x), max(CSinput.y), min(CSinput.y)))
-    plt.xlabel("M")
-    plt.ylabel("N")
-    plt.gca().invert_yaxis()
-    plt.title("Corrected Shoreline (Python)")
