@@ -13,6 +13,7 @@ from CSrectification import CSrectification
 from CSorganizer import CSorganizer
 from CSmapSL import CSmapSL
 from CSplotter import CSplotter
+from CSregister import register_img
 import cv2 as cv
 import matplotlib.pyplot as plt
 import angles2R
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     #%% Set up with use of CSorganizer
     
     sitename = 'egmond'
-    new_im = 'test1.jpg'
+    new_im = 'test15.jpg'
     
     organizer = CSorganizer(new_im,sitename)
     organizer.check_time()
@@ -34,8 +35,7 @@ if __name__ == '__main__':
     
     imname = organizer.NewImageName
     
-    refpath = r'C:\Coastal Citizen Science\CoastSnap\Python'
-    refname = '1616337600.Sun.Mar.21_15_40_00.CET.2021.egmond.snap.WouterStrating.jpg'
+    refname = 'target_image23.jpg'
     
     # Define the path, names of objects to be detected and their corresponding detection model names
     objects = ['strandtent',
@@ -55,40 +55,37 @@ if __name__ == '__main__':
     # Read the image data
     im = CSim(imname, path=organizer.pathIm)
     # Detect the specified for detection with the corresponding models
-    imDetect = CSdetection(imname,path=organizer.pathObjects, impath=organizer.pathIm)
-    imDetect.detector(Objects = objects, inputPath=organizer.pathIm, outputPath=organizer.pathDetect, DetectionModels = detection, ThresholdPercentage=detectionThreshold)
+    imDetect = CSdetection(imPath=organizer.pathIm,objPath='C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond',Objects = objects, DetectionModels = detection)
+    imDetect.detector(organizer.NewImageName)
     # Mask everything but the detected stable features
     im.mask = imDetect.mask(addBoundary=False)
     
+    im.reg = register_img(organizer.NewImageName,
+                          imagePath = organizer.pathIm,
+                          targetPath = organizer.pathTargetIm,
+                          mask = im.mask,
+                          warp = 'perspective')
+        
     #%% Reference Image
     
     # Read the image data
-    ref = CSim(refname, path=organizer.pathRefIm)
-    # Detect the specified for detection with the corresponding models
-    refDetect = CSdetection(refname, path=organizer.pathObjects, impath=organizer.pathRefIm)
-    refDetect.detector(Objects = objects, DetectionModels = detection, inputPath=organizer.pathRefIm, ThresholdPercentage=detectionThreshold)
-    # Mask everything but the detected stable features
-    ref.mask = refDetect.mask(addBoundary=False)
-    
-    #%% Image Registration
-    
-    reg = CSregistration(ref.mask, im.mask, im.color)
-    im.reg, im.match = reg.register(nFeatures=500000,matchPercent=0.8)
+    ref = CSim(refname, path=organizer.pathTargetIm)
     
     
     fig1, ax1 = plt.subplots()
     ax1.imshow(im.reg)
     fig2, ax2 = plt.subplots()
     ax2.imshow(ref.color)
-    fig3, ax3 = plt.subplots()
-    ax3.imshow(im.match)
     
     #%% Object Detection for UV retrieval
 
     #%% Georectification
     
-    UV = np.array([[3318.53598243924, 2546.07875045151, 3072.77294327758],
-                   [1205.66917219563, 1419.20272388791, 1238.25280647238]])
+    UV = np.array([[3175.16433347455, 2411.05506640388, 2934.31631638085],
+                   [1208.15196942975, 1426.95972957084, 1245.35361552028]])
+    
+    # UV = np.array([[3318.53598243924, 2546.07875045151, 3072.77294327758],
+    #                [1205.66917219563, 1419.20272388791, 1238.25280647238]])
         
     rect = CSrectification(CSinput,im,UV,registeredIm = True)
     

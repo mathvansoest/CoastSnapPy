@@ -48,13 +48,14 @@ class CSorganizer():
         os.makedirs('Database',exist_ok=True)
         os.makedirs('Code',exist_ok=True)
         os.makedirs('Objects',exist_ok=True)
-        os.makedirs('ReferenceImages',exist_ok=True)
+        os.makedirs('Target',exist_ok=True)
         
         # Define folders that need site specific subfolders
-        siteFolders = 'Shorelines', 'Objects', 'ReferenceImages', 'Images'
+        siteFolders = 'Shorelines', 'Objects', 'Target', 'Images'
         
         # Define subfolders for image parent folder
         imageFolders = 'Processed','Raw','Rectified','Registered','Detected'
+        targetFolders = 'Images','Mask'
         
         # Create Site Specific subfolders
         for siteFolder in siteFolders:
@@ -65,11 +66,14 @@ class CSorganizer():
                 if siteFolder == 'Shorelines':                   
                     os.makedirs(sitePath + self.year, exist_ok=True)
                     os.makedirs('Shorelines/Transects', exist_ok=True)
-                if siteFolder == 'Objects' or 'ReferenceImages':                    
+                if siteFolder == 'Objects' or 'TargetImages':                    
                     os.makedirs(sitePath, exist_ok=True)
                 if siteFolder == 'Images':
                     for imageFolder in imageFolders:                        
                         os.makedirs(sitePath + imageFolder + '/' + self.year, exist_ok=True)
+                if siteFolder == 'Target':
+                    for targetFolder in targetFolders:                        
+                        os.makedirs(sitePath + targetFolder, exist_ok=True)
                         
     def gen_paths(self):
         
@@ -85,7 +89,8 @@ class CSorganizer():
         self.pathDetect = base + '/' + 'Images/' + self.site + '/' + 'Detected/' + self.year
         self.pathSL = base + '/' + 'Shorelines/' + self.site + '/'+ self.year
         self.pathObjects = base + '/' + 'Objects/' + self.site
-        self.pathRefIm = base + '/' + 'ReferenceImages/' + self.site
+        self.pathTargetIm = base + '/' + 'Target/' + self.site + '/Images'
+        self.pathTargetMask = base + '/' + 'Target/' + self.site + '/Mask'
         self.pathTrans = base + '/' + 'Shorelines/Transects/'
         self.fileTrans = self.pathTrans + 'SLtransects_' + self.site + '.mat'
                           

@@ -15,41 +15,40 @@ from imageai.Detection.Custom import CustomObjectDetection
 import numpy as np
 
 class CSdetection:
-    def __init__(self, imFileName, path=os.getcwd(), impath = os.getcwd()):
-        self.imFileName = imFileName
-        self.imRGB = cv2.imread(os.path.join(impath,self.imFileName))
-        self.imGray = cv2.imread(os.path.join(impath,self.imFileName),0)
-        self.path = path
+    def __init__(self, imPath, Objects, DetectionModels, objPath, ThresholdPercentage = 5):
         
-    def detector(self, Objects, DetectionModels, inputPath = os.getcwd(), outputPath = os.getcwd(), ThresholdPercentage = 50):
+        self.imPath = imPath
         self.Objects = Objects
         self.nObjects = len(Objects)
         self.DetectionModels = DetectionModels
-        self.inputPath = inputPath
-        self.outputPath = outputPath 
-        self.ThresholdPercentage = ThresholdPercentage
-        # initialize emtpy arrays
+        self.objPath = objPath
+        self.ThresholdPercentage = ThresholdPercentage    
+        
+    def detector(self, imFileName):
+        
+        self.imFileName = imFileName  
+        
+        # initialize emtpy array for detection box pixel index
         self.points = np.zeros([self.nObjects,4])
         
-        
         # Check if number of specified objects matches the number of specified detection models
-        if np.size(self.Objects) and np.size(DetectionModels) == np.size(self.Objects):
+        if np.size(self.Objects) and np.size(self.DetectionModels) == np.size(self.Objects):
             # Perform Detection for each of the specified objects
             for Object in self.Objects:
-                objpath = self.path + '/' + Object
+                objpath = os.path.join(os.path.abspath(self.objPath), Object)
             
                 # Which object is being detected?
                 print('detecting ' + Object + ' ...')
                 # Load Custom Object Detection information
                 detector = CustomObjectDetection()
                 detector.setModelTypeAsYOLOv3()
-                detector.setModelPath(os.path.join(objpath,"models",self.DetectionModels[Objects.index(Object)])) 
+                detector.setModelPath(os.path.join(objpath,"models",self.DetectionModels[self.Objects.index(Object)])) 
                 detector.setJsonPath(os.path.join(objpath,"json\detection_config.json"))
                 detector.loadModel()
 
                 # Perform detection
-                self.detections = detector.detectObjectsFromImage(input_image=os.path.join(self.inputPath,self.imFileName), 
-                                                                  output_image_path=os.path.join(self.outputPath,self.imFileName),
+                self.detections = detector.detectObjectsFromImage(input_image=os.path.join(self.imPath,self.imFileName),
+                                                                  output_image_path=os.path.join(self.imPath,'detected_'+self.imFileName),
                                                                   minimum_percentage_probability = self.ThresholdPercentage)
                 
                 # Initialize emtpy array for storing the detection probabilities, this allows multiple instances of 
@@ -62,7 +61,7 @@ class CSdetection:
                     self.Prob[j]=DetectDict['percentage_probability']
                     
                 detection = self.detections[np.argmax(self.Prob)]
-                self.points[Objects.index(Object),:] = np.array(detection.get('box_points', 'Value'))
+                self.points[self.Objects.index(Object),:] = np.array(detection.get('box_points', 'Value'))
                 
                 print(Object + ' was detected with a probability of ' + "%.2f" % max(self.Prob) + '%')
                 
@@ -74,9 +73,10 @@ class CSdetection:
         else:
             print('No objects for detection were specified or the amount of specified objects does not correspond with the amount of specified models')
 
-    def mask(self, addBoundary = True, boundaryPercentage = 100):
+    def mask(self, addBoundary = True, boundaryPercentage = 50):
         
-        self.imMask = np.copy(self.imGray)
+        self.imColor = cv2.imread(os.path.join(self.imPath,self.imFileName))
+        self.imGray = cv2.cvtColor(self.imColor, cv2.COLOR_BGR2GRAY)
         self.imMaskMat = np.zeros(np.shape(self.imGray))
         
         for i in range(len(self.points)):
@@ -104,27 +104,51 @@ class CSdetection:
                 if y2>np.size(self.imGray,0):y2=np.size(self.imGray,0)
     
             # Create Mask file
-            
-            self.imMaskMat[y1:y2,x1:x2]=1
+            self.imMaskMat[y1:y2,x1:x2]=255
             
         self.imMaskMat = self.imMaskMat.astype(np.uint8)
-        self.imMask = self.imMask * self.imMaskMat
             
-        return self.imMask
+        return self.imMaskMat
+    
+    def create_mask_target(self, maskPath):
+        
+        ImList = os.listdir(self.imPath)
+        Im = ImList[0]
+        
+        
+        # Check if every image has a mask 
+        if os.listdir(maskPath)[0] != 'target_mask.png': 
+            
+            #Perfrom object detection and retrieve pixel index of detection box
+            imDetect = CSdetection(targetDir,self.Objects,self.DetectionModels,self.objPath,ThresholdPercentage=self.ThresholdPercentage)
+            imDetect.detector(Im)
+            mask = imDetect.mask()
+            
+            cv2.imwrite(os.path.join(maskPath,'target_mask.png'),mask)
+                
+        else:
+            print('target_mask.png already exists')
+        
+    def create_mask_new(self,Im):
+        print('bla')
 
                       
 if __name__ == '__main__':
+
+    targetDir = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap2\Target\egmond\Images'
+    maskDir = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap2\Target\egmond\Mask'
     
-    imTest = '1616337600.Sun.Mar.21_15_40_00.CET.2021.egmond.snap.WouterStrating.jpg'
+    Objects = ['strandtent',
+               'zilvermeeuw']
+    DetectionModels = ['detection_model-ex-016--loss-0008.891.h5',
+                       'detection_model-ex-005--loss-0016.168.h5']
+    objPath = r'C:\Coastal Citizen Science\CoastSnapPy\CoastSnap2\Objects\egmond'
+
+    tarDetect = CSdetection(targetDir, Objects, DetectionModels, objPath)
+        
+    tarDetect.create_mask_target(maskDir)
+
     
-    Detect = CSdetection(imTest)
-    Detect.detector(Objects = ['strandtent','zilvermeeuw'], DetectionModels = ['detection_model-ex-016--loss-0008.891.h5','detection_model-ex-005--loss-0016.168.h5'], ThresholdPercentage=10)
-    mask = Detect.mask()
     
-    plt.imshow(mask)
-    # Register.CSRegister()
-    
-    #TestReg.CSdetector(Objects = ['strandtent','Zilvermeeuw'], DetectionModels = ['detection_model-ex-016--loss-0008.891.h5', 'detection_model-ex-020--loss-0015.920.h5'])
-            
     
 
