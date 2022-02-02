@@ -2,7 +2,10 @@
 """
 This script creates classes for all relevant data from the CoastSnap database; such as camera position, azimuth, tilt, roll etc..
 
-Image database: C:\Coastal Citizen Science\CoastSnap\Database\CoastSnapDB.xlsx
+Image database: .\CoastSnap\Database\CoastSnapDB.xlsx
+
+NOTE: It is important to note that this class has been defined for a fixed xcel-file format
+that means that the exact lay-out should be used for adding new sites.
 
 Created by: Math van Soest
 """
@@ -141,15 +144,3 @@ class CSinput(CSDB):
         FOV[0] = self.data.iloc[17,1]
         FOV[1] = self.data.iloc[18,1]
         return FOV
-        
-        
-if __name__ == '__main__':         
-    path = r'C:\Coastal Citizen Science\CoastSnap\Database\CoastSnapDB.xlsx'
-    sitename = 'egmond'
-    xl_db = pd.ExcelFile('C:\Coastal Citizen Science\CoastSnap\Database\CoastSnapDB.xlsx')
-    # xl_site = xl_db.parse(sitename)
-    
-    EgmondData = CSinput(path, sitename)
-    
-    # print(EgmondData.GCPmat)
-    print(EgmondData.GCPmat)

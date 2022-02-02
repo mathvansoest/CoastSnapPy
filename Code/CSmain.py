@@ -24,29 +24,37 @@ if __name__ == '__main__':
 
     #%% Set up with use of CSorganizer
     
+    #TODO write into function with these two lines as input
     sitename = 'egmond'
     new_im = 'test2.jpg'
     
-    organizer = CSorganizer(new_im,sitename)
-    organizer.check_time()
-    organizer.check_directories()
-    organizer.gen_paths()
-    organizer.process_new_image()
-    
-    imname = organizer.NewImageName
-    
+    #TODO define following lines from xcel-file database
+    # Define reference image for visualisation
     refname = 'target_image23.jpg'
+    
+    # Define UV-pixel values for reference image
+    UV = np.array([[3175.16433347455, 2411.05506640388, 2934.31631638085],
+                   [1208.15196942975, 1426.95972957084, 1245.35361552028]])
     
     # Define the path, names of objects to be detected and their corresponding detection model names
     objects = ['strandtent',
                'zilvermeeuw']
     detection = ['detection_model-ex-016--loss-0008.891.h5',
                  'detection_model-ex-005--loss-0016.168.h5']
+    
+    # Use oragnizer class to process new image
+    organizer = CSorganizer(new_im,sitename)
+    organizer.check_time()
+    organizer.check_directories()
+    organizer.gen_paths()
+    organizer.process_new_image()
+    
+    # Retrieve new image file name from organizer class
+    imname = organizer.NewImageName
+    
     # Define the percentage threshold for object detection
     detectionThreshold = 5 #[%]
-    
-    # Number of features used for image registration
-    
+
     #%% Read Database
     CSinput = CSinput(organizer.pathDB, sitename)
     
@@ -77,15 +85,7 @@ if __name__ == '__main__':
     fig2, ax2 = plt.subplots()
     ax2.imshow(ref.color)
     
-    #%% Object Detection for UV retrieval
-
     #%% Georectification
-    
-    UV = np.array([[3175.16433347455, 2411.05506640388, 2934.31631638085],
-                   [1208.15196942975, 1426.95972957084, 1245.35361552028]])
-    
-    # UV = np.array([[3318.53598243924, 2546.07875045151, 3072.77294327758],
-    #                [1205.66917219563, 1419.20272388791, 1238.25280647238]])
         
     rect = CSrectification(CSinput,im,UV,registeredIm = True)
     

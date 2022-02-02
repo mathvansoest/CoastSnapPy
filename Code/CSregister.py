@@ -387,12 +387,10 @@ def register_img(
     warp: Warp = typer.Option(
         Warp.perspective, case_sensitive=False, help="type of transformation to apply"
     ),
-):
-
-    
+    ): 
     
     """
-    Registers raw images to target images.
+    Registers raw image to target images.
     """
 
     # TODO Check if target folders exist
@@ -422,11 +420,13 @@ def register_img(
     r.create_keypoints_descriptors()
     rawout.append(r)
 
+    # Store all image matches with target images
     image_matches = [ImageComparer(r, t, warp) for r, t in product(rawout, targets)]
     
     # Find best match and apply warp
     best_match = min(image_matches, key=lambda x: x.score)
     
+    # Return best match registration
     return cv2.cvtColor(best_match.registered_array, cv2.COLOR_BGRA2RGB)
 
             

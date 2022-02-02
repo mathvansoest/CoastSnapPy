@@ -117,25 +117,9 @@ class CSorganizer():
         
         paths = self.pathReg, self.pathRect, self.pathSL
         
-        
         if output_type != 'SL':
             NewFileName = self.NewNameTime + output_type + '.jpg'
             cv2.imwrite(paths[output_type_options.index(output_type)] + '/' + NewFileName, output_file)
         else: 
             NewFileName = self.NewNameTime + output_type + '.mat'
             scipy.io.savemat(paths[output_type_options.index(output_type)] + '/' + NewFileName, output_file)
-
-if __name__ == '__main__':    
-    site = 'egmond'
-    test = CSorganizer('test1.jpg',site)
-    test.check_time()
-    test.check_directories()
-    test.gen_paths()
-    test.process_new_image()
-    
-    testim = cv2.imread('test1.jpg')
-    
-    test.process_output_files(testim,'SL')
-                
-                
-                

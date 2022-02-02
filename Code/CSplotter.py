@@ -25,9 +25,4 @@ class CSplotter():
         plt.gca().invert_yaxis()
         plt.title("Corrected Shoreline (Python)")
     
-    # def plot_rectSL_UTM(self,rect,SL,CSinput):
-        
-        
-        
-        
-
+    #TODO def plot_rectSL_UTM(self,rect,SL,CSinput):
