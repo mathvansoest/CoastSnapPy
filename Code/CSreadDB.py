@@ -13,7 +13,7 @@ Created by: Math van Soest
 import pandas as pd
 import numpy as np
 
-class CSDB:
+class CSreadDB:
     
     def __init__(self, path, sitename):
         self.sitename = sitename
@@ -22,8 +22,7 @@ class CSDB:
     def _parse_file(self, path):
         xl_db = pd.ExcelFile(path)
         self.data = xl_db.parse(self.sitename)
-
-class CSinput(CSDB):
+        self.data2 = self.data.set_index('Station Data')
     
     @property
     def x0(self):
@@ -144,3 +143,35 @@ class CSinput(CSDB):
         FOV[0] = self.data.iloc[17,1]
         FOV[1] = self.data.iloc[18,1]
         return FOV
+    
+    @property
+    def ObjectNames(self):
+        ObjectNames = self.data2.loc['Object Names'].iloc[0]
+        return ObjectNames.split(',')
+    
+    @property
+    def ObjectModels(self):
+        ObjectModels = self.data2.loc['Models'].iloc[0]
+        return ObjectModels.split(',')
+    
+    @property
+    def RefImage(self):
+        RefImage = self.data2.loc['Reference Image'].iloc[0]
+        return RefImage
+    
+    @property
+    def UV(self):
+        UVx = np.array(self.data2.loc['UV-x'].iloc[:,0])
+        UVy = np.array(self.data2.loc['UV-y'].iloc[:,0])
+        
+        UV = np.vstack([UVx,UVy])
+        
+        return UV
+    
+if __name__ == '__main__':
+    
+    db = CSreadDB('C:\Github\CoastSnap\Database\CoastSnapDB.xlsx','egmond')
+    test = db.ObjectNames.split(',')
+    
+
+    

@@ -12,11 +12,6 @@ import numpy.matlib
 from scipy import interpolate
 from scipy.optimize import curve_fit
 from angles2R import angles2R
-from CSreadDB import CSinput
-from CSreadIm import CSim
-import cv2 as cv
-import matplotlib.pyplot as plt
-
 
 class CSrectification():
     
@@ -219,36 +214,3 @@ class CSrectification():
         
         #All grid coordinates without pixel data are assigned a NaN value due to the division by 0 from N:
         self.im = (images_sumI/N).astype(int)
-        
-
-if __name__ == '__main__':
-    
-
-    # Define path to location of the CoastSnap Database
-    path = r'C:\Coastal Citizen Science\CoastSnap\Database\CoastSnapDB.xlsx'
-    sitename = 'egmond'
- 
-    CSinput = CSinput(path, sitename)
-    
-    UV = np.array([[2683.07992933693,1994.84531801943,2462.97897751479,],[961.109189295402,1148.93483322320,990.960816201514]])
-
-    
-    imname = '1583622000.Sun.Mar.08_00_00_00.CET.2020.egmond.snap.FroukjeHajer.jpg'
-    
-    im = CSim(imname)
-    
-    rect = CSrectification(CSinput, im, UV)
-    
-    plt.figure(2)
-    plt.imshow(rect.im, extent = (min(CSinput.x), max(CSinput.x), max(CSinput.y), min(CSinput.y)))
-    plt.gca().invert_yaxis()
-    plt.xlabel("X (m)")
-    plt.ylabel("Y (m)")
-    plt.title("Georectified image - Python")
-    
-    plt.figure(1)
-    fig2, axes = plt.subplots()
-    axes.imshow(im.color)
-    axes.plot(UV[0,:], UV[1,:],'go', markersize = 3)
-    axes.scatter(rect.UV_pred[0,:], rect.UV_pred[1,:], s=80, facecolors='none', edgecolors='r')
-    

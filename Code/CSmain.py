@@ -5,43 +5,21 @@ This script import all of the classes and function for CoastSnap Python to opera
 Created by: Math van Soest
 """
 
-from CSreadDB import CSinput
+from CSreadDB import CSreadDB
 from CSreadIm import CSim
 from CSdetection import CSdetection
-from CSregistration2 import CSregistration
 from CSrectification import CSrectification
 from CSorganizer import CSorganizer
 from CSmapSL import CSmapSL
 from CSplotter import CSplotter
 from CSregister import register_img
-import cv2 as cv
 import matplotlib.pyplot as plt
-import angles2R
 import numpy as np
 
-
-if __name__ == '__main__':
+def CoastSnapPy(sitename,new_im): 
 
     #%% Set up with use of CSorganizer
-    
-    #TODO write into function with these two lines as input
-    sitename = 'egmond'
-    new_im = 'test2.jpg'
-    
-    #TODO define following lines from xcel-file database
-    # Define reference image for visualisation
-    refname = 'target_image23.jpg'
-    
-    # Define UV-pixel values for reference image
-    UV = np.array([[3175.16433347455, 2411.05506640388, 2934.31631638085],
-                   [1208.15196942975, 1426.95972957084, 1245.35361552028]])
-    
-    # Define the path, names of objects to be detected and their corresponding detection model names
-    objects = ['strandtent',
-               'zilvermeeuw']
-    detection = ['detection_model-ex-016--loss-0008.891.h5',
-                 'detection_model-ex-005--loss-0016.168.h5']
-    
+        
     # Use oragnizer class to process new image
     organizer = CSorganizer(new_im,sitename)
     organizer.check_time()
@@ -51,19 +29,17 @@ if __name__ == '__main__':
     
     # Retrieve new image file name from organizer class
     imname = organizer.NewImageName
-    
-    # Define the percentage threshold for object detection
-    detectionThreshold = 5 #[%]
 
     #%% Read Database
-    CSinput = CSinput(organizer.pathDB, sitename)
+    
+    CSdb = CSreadDB(organizer.pathDB, sitename)
     
     #%% Input Image
     
     # Read the image data
     im = CSim(imname, path=organizer.pathIm)
     # Detect the specified for detection with the corresponding models
-    imDetect = CSdetection(imPath=organizer.pathIm,objPath='C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond',Objects = objects, DetectionModels = detection)
+    imDetect = CSdetection(imPath=organizer.pathIm,objPath='C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond',Objects = CSdb.ObjectNames, DetectionModels = CSdb.ObjectModels)
     imDetect.detector(organizer.NewImageName)
     # Mask everything but the detected stable features
     im.mask = imDetect.mask(addBoundary=False)
@@ -77,8 +53,7 @@ if __name__ == '__main__':
     #%% Reference Image
     
     # Read the image data
-    ref = CSim(refname, path=organizer.pathTargetIm)
-    
+    ref = CSim(CSdb.RefImage, path=organizer.pathTargetIm)
     
     fig1, ax1 = plt.subplots()
     ax1.imshow(im.reg)
@@ -87,17 +62,17 @@ if __name__ == '__main__':
     
     #%% Georectification
         
-    rect = CSrectification(CSinput,im,UV,registeredIm = True)
+    rect = CSrectification(CSdb,im,CSdb.UV,registeredIm = True)
     
     plt.figure(1)
     fig2, axes = plt.subplots()
     axes.imshow(im.reg)
-    axes.plot(UV[0,:], UV[1,:],'go', markersize = 3)
+    axes.plot(CSdb.UV[0,:], CSdb.UV[1,:],'go', markersize = 3)
     axes.scatter(rect.UV_pred[0,:], rect.UV_pred[1,:], s=80, facecolors='none', edgecolors='r')
     
     #%% Shoreline Mapping
    
-    SL = CSmapSL(organizer.fileTrans,CSinput,im,rect)
+    SL = CSmapSL(organizer.fileTrans,CSdb,im,rect)
 
     #%% Process the output files to their correct directory
     
@@ -113,4 +88,8 @@ if __name__ == '__main__':
     #%% User feedback images retrieved from plotter class
     
     plotter = CSplotter()
-    plotter.plot_rectSL_xyz(rect,SL,CSinput)
+    plotter.plot_rectSL_xyz(rect,SL,CSdb)
+
+#%% Run function
+
+CoastSnapPy('egmond','test1.jpg')
