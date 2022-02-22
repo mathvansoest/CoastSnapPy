@@ -12,13 +12,11 @@ from CSrectification import CSrectification
 from CSorganizer import CSorganizer
 from CSmapSL import CSmapSL
 from CSplotter import CSplotter
-from CSregister import register_img
+from CSregister2 import CSregister
 import matplotlib.pyplot as plt
 import numpy as np
 
 def CoastSnapPy(sitename,new_im): 
-
-    #%% Set up with use of CSorganizer
         
     # Use oragnizer class to process new image
     organizer = CSorganizer(new_im,sitename)
@@ -29,31 +27,32 @@ def CoastSnapPy(sitename,new_im):
     
     # Retrieve new image file name from organizer class
     imname = organizer.NewImageName
-
-    #%% Read Database
     
+    # Read CoastSnap xcel-database
     CSdb = CSreadDB(organizer.pathDB, sitename)
     
-    #%% Input Image
-    
-    # Read the image data
+    # Read the new image data
     im = CSim(imname, path=organizer.pathIm)
-    # Detect the specified for detection with the corresponding models
-    imDetect = CSdetection(imPath=organizer.pathIm,objPath='C:\Coastal Citizen Science\CoastSnapPy\CoastSnap\Objects\egmond',Objects = CSdb.ObjectNames, DetectionModels = CSdb.ObjectModels)
-    imDetect.detector(organizer.NewImageName)
-    # Mask everything but the detected stable features
-    im.mask = imDetect.mask(addBoundary=False)
     
-    im.reg = register_img(organizer.NewImageName,
-                          imagePath = organizer.pathIm,
-                          targetPath = organizer.pathTargetIm,
-                          mask = im.mask,
-                          warp = 'perspective')
+    # Detect the specified for detection with the corresponding models
+    # Initialize detection class
+    detect = CSdetection(imPath=organizer.pathIm,outPath=organizer.pathDetect,objPath=organizer.pathObjects,Objects = CSdb.ObjectNames, DetectionModels = CSdb.ObjectModels)
+    # Perform object detection
+    detect.detector(organizer.NewImageName)
+    # Create mask where objects are located
+    im.mask = detect.mask(addBoundary=True)
+
+    # Check if all target images used for registration have their corresponding mask
+    # if not, these are created
+    detect.mask_target(organizer.pathTarget)
+    
+    #%% Perform registration of new image file
+    im.reg = CSregister(im.color,im.mask,organizer.pathTarget)
         
     #%% Reference Image
     
     # Read the image data
-    ref = CSim(CSdb.RefImage, path=organizer.pathTargetIm)
+    ref = CSim(CSdb.RefImage, path=organizer.pathTarget)
     
     fig1, ax1 = plt.subplots()
     ax1.imshow(im.reg)
@@ -89,7 +88,8 @@ def CoastSnapPy(sitename,new_im):
     
     plotter = CSplotter()
     plotter.plot_rectSL_xyz(rect,SL,CSdb)
+    
 
 #%% Run function
 
-CoastSnapPy('egmond','test1.jpg')
+CoastSnapPy('egmond','test11.jpg')

@@ -71,9 +71,6 @@ class CSorganizer():
                 if siteFolder == 'Images':
                     for imageFolder in imageFolders:                        
                         os.makedirs(sitePath + imageFolder + '/' + self.year, exist_ok=True)
-                if siteFolder == 'Target':
-                    for targetFolder in targetFolders:                        
-                        os.makedirs(sitePath + targetFolder, exist_ok=True)
                         
     def gen_paths(self):
         
@@ -89,8 +86,7 @@ class CSorganizer():
         self.pathDetect = base + '/' + 'Images/' + self.site + '/' + 'Detected/' + self.year
         self.pathSL = base + '/' + 'Shorelines/' + self.site + '/'+ self.year
         self.pathObjects = base + '/' + 'Objects/' + self.site
-        self.pathTargetIm = base + '/' + 'Target/' + self.site + '/Images'
-        self.pathTargetMask = base + '/' + 'Target/' + self.site + '/Mask'
+        self.pathTarget = base + '/' + 'Target/' + self.site 
         self.pathTrans = base + '/' + 'Shorelines/Transects/'
         self.fileTrans = self.pathTrans + 'SLtransects_' + self.site + '.mat'
                           

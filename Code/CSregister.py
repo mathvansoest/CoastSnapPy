@@ -32,10 +32,12 @@ class Image:
 
     path = attr.ib()
 
-    def create_keypoints_descriptors(self, max_features=5000):
+    def create_keypoints_descriptors(self, max_features=1000):
         """
         Create keypoints and descriptors used for feature matching
         """
+
+# TODO check if mask is performed after creating features
 
         logger.debug(f"Generating keypoints for {self.filename}")
         array_gray = cv2.cvtColor(self.array, cv2.COLOR_BGR2GRAY)
