@@ -12,15 +12,22 @@ Created by: Math van Soest
 
 import pandas as pd
 import numpy as np
+import glob
+import os
+import cv2
+import openpyxl
+import matplotlib.pyplot as plt
+from CSgetUV import getUV
 
 class CSreadDB:
     
     def __init__(self, path, sitename):
+        self.path = path
         self.sitename = sitename
         self._parse_file(path)
     
     def _parse_file(self, path):
-        xl_db = pd.ExcelFile(path)
+        xl_db = pd.ExcelFile(self.path)
         self.data = xl_db.parse(self.sitename)
         self.data2 = self.data.set_index('Station Data')
     
@@ -159,19 +166,62 @@ class CSreadDB:
         RefImage = self.data2.loc['Reference Image'].iloc[0]
         return RefImage
     
-    @property
-    def UV(self):
-        UVx = np.array(self.data2.loc['UV-x'].iloc[:,0])
-        UVy = np.array(self.data2.loc['UV-y'].iloc[:,0])
+    def getUV(self,targetIm):
+        
+        target_index = self.data[self.data.iloc[:,0]==targetIm].index
+        
+        UVx = self.data2.iloc[target_index+1]
+        UVy = self.data2.iloc[target_index+2]
         
         UV = np.vstack([UVx,UVy])
         
+        if UV.shape != (2,len(self.GCPsCombo)):
+            raise ValueError('Check if target image in DB has the same filename as images in target folder')
+        
         return UV
     
+    def checkUV(self,targetDir):
+        """"
+        This function checks if all target images have specified UV points.
+        If not, each will have show up and a small gui will direct you to 
+        provide them. 
+        """
+        # Get target images
+        jpg_extension = targetDir + "\*.jpg"
+        
+        # List all target and mask files
+        target_list = [os.path.basename(x) for x in glob.glob(jpg_extension)]
+        
+        # See which target images exist in database
+        db_list = self.data2.index[self.data.iloc[:,0].isin(target_list)].tolist()
+        
+        # Compare if each of the images files has a corresponding mask file
+        missing_targets = set(target_list).difference(db_list)
+        
+        for tar in missing_targets:
+            # Get UVpoints from missing target image
+            UV = getUV(targetDir,tar,np.array(self.GCPsName)[db.GCPsCombo])
+            
+            UVxl = np.hstack([[['UVx'],['UVy']],UV])
+            
+            UVxl1 = list(UVxl[0,:])
+            UVxl2 = list(UVxl[1,:])
+            
+            print()
+            
+            wb = openpyxl.load_workbook(filename=self.path)
+            ws = wb[self.sitename]
+            ws.append([tar])
+            ws.append(UVxl1)
+            ws.append(UVxl2)
+            wb.save(self.path)
+            
+            return ws
+            
 if __name__ == '__main__':
     
     db = CSreadDB('C:\Github\CoastSnap\Database\CoastSnapDB.xlsx','egmond')
-    test = db.ObjectNames.split(',')
     
+    UV = db.checkUV('C:\Github\CoastSnap\Target\egmond')
 
     

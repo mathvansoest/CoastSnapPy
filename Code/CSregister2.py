@@ -22,13 +22,13 @@ def CSregister(newIm,
                imMask,
                targetDir,
                imPath = os.getcwd(),
-               nfeatures=100000,
+               nfeatures=5000,
                max_distance=False,
-               max_distance_value=1000,
+               max_distance_value=300,
                same_region=False,
                same_region_threshold=0.2,
                ransac_threshold=10,
-               homography_confidence=0.95,
+               homography_confidence=0.99,
                imMatches=False):
 
     # Define file extension, target images should be .jpg's, mask files 
@@ -115,7 +115,7 @@ def CSregister(newIm,
             h,_ = cv2.findHomography(raw_pts, target_pts, cv2.RANSAC, ransacReprojThreshold=ransac_threshold, confidence=homography_confidence)
             # Calculate the determinant of the top left 2x2 cells of the homography matrix 
             # to check it's stability
-            h_det = np.linalg.det(h)
+            h_det = np.linalg.det(h[0:1,0:1])
             
             # Store all homography matrices
             h_all[:,:,i] = h
@@ -133,8 +133,9 @@ def CSregister(newIm,
     # Perform registration
     reg_im = cv2.warpPerspective(newIm,best_h,(tar_gray.shape[1],tar_gray.shape[0]),)    
     
+    best_match_tar = tar_list[best_h_det]
+    
     # Tell which target image resulted in h_det closest to 1
+    print('\nBest match with %s.' % best_match_tar)
     
-    print('\nBest match with %s.' % tar_list[best_h_det])
-    
-    return reg_im
+    return reg_im, best_match_tar

@@ -47,12 +47,15 @@ def CoastSnapPy(sitename,new_im):
     detect.mask_target(organizer.pathTarget)
     
     #%% Perform registration of new image file
-    im.reg = CSregister(im.color,im.mask,organizer.pathTarget)
+    im.reg, best_match_tar = CSregister(im.color,im.mask,organizer.pathTarget)
+    
+    # Get UV points from best match target image
+    CSdb.UV = CSdb.getUV(best_match_tar)
         
     #%% Reference Image
     
     # Read the image data
-    ref = CSim(CSdb.RefImage, path=organizer.pathTarget)
+    ref = CSim(best_match_tar, path=organizer.pathTarget)
     
     fig1, ax1 = plt.subplots()
     ax1.imshow(im.reg)
@@ -92,4 +95,4 @@ def CoastSnapPy(sitename,new_im):
 
 #%% Run function
 
-CoastSnapPy('egmond','test11.jpg')
+CoastSnapPy('egmond','test5.jpg')

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>images</folder>
+	<filename>image_81.jpg</filename>
+	<path>C:\Coastal Citizen Science\CoastSnapPy\CoastSnap3\Objects\egmond\pad\train\images\image_81.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>4624</width>
+		<height>3468</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>pad</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>3511</xmin>
+			<ymin>1582</ymin>
+			<xmax>4624</xmax>
+			<ymax>2904</ymax>
+		</bndbox>
+	</object>
+</annotation>
