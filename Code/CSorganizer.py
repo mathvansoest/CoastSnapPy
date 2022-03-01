@@ -78,7 +78,7 @@ class CSorganizer():
         base = self.pathCS
         
         # Define all paths necessary to execute CoastSnapPy
-        self.pathDB = base + '/Database' + '/CoastSnapDB.xlsx'
+        self.pathDB = base + '/Database' + '/CoastSnapPyDB.xlsx'
         self.pathIm = base + '/Images' + '/' + self.site + '/' + 'Processed/' + self.year
         self.pathImRaw = base + '/' + 'Images/' + self.site + '/' + 'Raw/' + self.year
         self.pathReg =  base + '/' + 'Images/' + self.site + '/' + 'Registered/' + self.year

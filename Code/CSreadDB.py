@@ -16,6 +16,7 @@ import glob
 import os
 import cv2
 import openpyxl
+import pyperclip as pc
 import matplotlib.pyplot as plt
 from CSgetUV import getUV
 
@@ -28,6 +29,7 @@ class CSreadDB:
     
     def _parse_file(self, path):
         xl_db = pd.ExcelFile(self.path)
+        self.all_sites = xl_db.sheet_names
         self.data = xl_db.parse(self.sitename)
         self.data2 = self.data.set_index('Station Data')
     
@@ -173,6 +175,9 @@ class CSreadDB:
         UVx = self.data2.iloc[target_index+1]
         UVy = self.data2.iloc[target_index+2]
         
+        UVx = UVx.iloc[:,:len(self.GCPsCombo)]
+        UVy = UVy.iloc[:,:len(self.GCPsCombo)]
+        
         UV = np.vstack([UVx,UVy])
         
         if UV.shape != (2,len(self.GCPsCombo)):
@@ -196,28 +201,35 @@ class CSreadDB:
         db_list = self.data2.index[self.data.iloc[:,0].isin(target_list)].tolist()
         
         # Compare if each of the images files has a corresponding mask file
-        missing_targets = set(target_list).difference(db_list)
+        missing_targets = list(set(target_list).difference(db_list))
         
-        for tar in missing_targets:
-            # Get UVpoints from missing target image
-            UV = getUV(targetDir,tar,np.array(self.GCPsName)[db.GCPsCombo])
+        UVxl = pd.DataFrame()
+        
+        if len(missing_targets) >= 1:
+        
+            for tar in reversed(missing_targets):
+                # Get UVpoints from missing target image
+                UV = getUV(targetDir,tar,np.array(self.GCPsName)[self.GCPsCombo])
+                
+                # Add UVx and UVy
+                UVxl_new = np.hstack([[['UVx'],['UVy']],UV])
+                # Add target_image file name 
+                UVxl_new = np.vstack([np.hstack([np.array([tar]),np.tile(np.nan,3)]),UVxl_new])
+                
+                UVxl = UVxl.append(pd.DataFrame(UVxl_new))            
             
-            UVxl = np.hstack([[['UVx'],['UVy']],UV])
+            UVxl.to_clipboard(index=False,header=False)
             
-            UVxl1 = list(UVxl[0,:])
-            UVxl2 = list(UVxl[1,:])
             
-            print()
+            print('New UV points have been copied on clipboard and should be pasted in your xcel-database')
             
-            wb = openpyxl.load_workbook(filename=self.path)
-            ws = wb[self.sitename]
-            ws.append([tar])
-            ws.append(UVxl1)
-            ws.append(UVxl2)
-            wb.save(self.path)
+            return UVxl
             
-            return ws
+            exit()
             
+        else:
+            print('All target images have UV points specified in DataBase')
+        
 if __name__ == '__main__':
     
     db = CSreadDB('C:\Github\CoastSnap\Database\CoastSnapDB.xlsx','egmond')

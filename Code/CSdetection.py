@@ -16,6 +16,7 @@ import numpy as np
 from CSorganizer import CSorganizer
 from CSreadDB import CSreadDB
 from CSreadIm import CSim
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 class CSdetection:
@@ -48,7 +49,7 @@ class CSdetection:
                 detector = CustomObjectDetection()
                 detector.setModelTypeAsYOLOv3()
                 detector.setModelPath(os.path.join(objpath,"models",self.DetectionModels[self.Objects.index(Object)])) 
-                detector.setJsonPath(os.path.join(objpath,"json\detection_config.json"))
+                detector.setJsonPath(os.path.join(objpath,"json","detection_config.json"))
                 detector.loadModel()
 
                 # Perform detection
@@ -142,25 +143,35 @@ class CSdetection:
             # Iterate over each target without mask and creat the needed files
             i_mask = np.delete(np.array(range(len(file_list))),np.array(cmp).astype(int))
             
-            for i in i_mask:
-                
-                # Define path for each image with missing mask
-                targetIm = os.path.join(file_list[i] + '.jpg')
-                print(targetIm + ' has no mask. Creating it now...')
-                
-                # Detect objects 
-                targetDetect = CSdetection(targetDir, self.outPath, self.Objects, self.DetectionModels, self.objPath, self.ThresholdPercentage)
-                
-                targetDetect.detector(targetIm)
-                
-                # Create mask
-                targetMask = targetDetect.mask(addBoundary=False)
-                
-                # Store mask file with corresponding name as .png file
-                new_target_mask = os.path.join(targetDir, file_list[i] + '_mask.png')
-                
-                print(new_target_mask)
-                cv2.imwrite(new_target_mask,targetMask)
+            print('Not all target images have corresponding masks... Creating them now!')
+            
+            total_i = len(i_mask)
+            # Initialize progress bar
+            with tqdm(total=total_i, leave = True) as pbar:
+            
+                for i in i_mask:
+                    
+                    # Start progress bar
+                    pbar.set_description("Creating mask for %s" % file_list[i])
+                    
+                    # Define path for each image with missing mask
+                    targetIm = os.path.join(file_list[i] + '.jpg')
+                    
+                    # Detect objects 
+                    targetDetect = CSdetection(targetDir, self.outPath, self.Objects, self.DetectionModels, self.objPath, self.ThresholdPercentage)
+                    
+                    targetDetect.detector(targetIm)
+                    
+                    # Create mask
+                    targetMask = targetDetect.mask(addBoundary=False)
+                    
+                    # Store mask file with corresponding name as .png file
+                    new_target_mask = os.path.join(targetDir, file_list[i] + '_mask.png')
+                    
+                    cv2.imwrite(new_target_mask,targetMask)
+                    
+                    # Update progress bar after each iteration
+                    pbar.update()
                 
     
         

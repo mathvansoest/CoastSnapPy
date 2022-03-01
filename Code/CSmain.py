@@ -31,6 +31,9 @@ def CoastSnapPy(sitename,new_im):
     # Read CoastSnap xcel-database
     CSdb = CSreadDB(organizer.pathDB, sitename)
     
+    # Check if each target image has defined UV points
+    CSdb.checkUV(organizer.pathTarget)
+    
     # Read the new image data
     im = CSim(imname, path=organizer.pathIm)
     
@@ -51,7 +54,7 @@ def CoastSnapPy(sitename,new_im):
     
     # Get UV points from best match target image
     CSdb.UV = CSdb.getUV(best_match_tar)
-        
+            
     #%% Reference Image
     
     # Read the image data
@@ -95,4 +98,4 @@ def CoastSnapPy(sitename,new_im):
 
 #%% Run function
 
-CoastSnapPy('egmond','test5.jpg')
+CoastSnapPy('egmond','test2.jpg')

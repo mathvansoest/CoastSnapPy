@@ -37,9 +37,9 @@ def getUV(path,im, GCPs):
         fig.canvas.draw()
         
         # Store results in UV
-        UV[0,i] = round(A[0][0])
-        UV[1,i] = round(A[0][1])
+        UV[0,i] = np.round(A[0][0])
+        UV[1,i] = np.round(A[0][1])
     
     plt.close()
     
-    return np.array(UV)
+    return UV.astype(int)
