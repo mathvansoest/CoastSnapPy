@@ -5,6 +5,7 @@ This script import all of the classes and function for CoastSnap Python to opera
 Created by: Math van Soest
 """
 
+import os
 from CSreadDB import CSreadDB
 from CSreadIm import CSim
 from CSdetection import CSdetection
@@ -16,10 +17,10 @@ from CSregister2 import CSregister
 import matplotlib.pyplot as plt
 import numpy as np
 
-def CoastSnapPy(sitename,new_im): 
+def CoastSnapPy(sitename,new_im,outputPath=None): 
         
     # Use oragnizer class to process new image
-    organizer = CSorganizer(new_im,sitename)
+    organizer = CSorganizer(new_im,sitename,outputPath)
     organizer.check_time()
     organizer.check_directories()
     organizer.gen_paths()
@@ -95,7 +96,9 @@ def CoastSnapPy(sitename,new_im):
     plotter = CSplotter()
     plotter.plot_rectSL_xyz(rect,SL,CSdb)
     
+    # Save plot
+    plt.savefig(os.path.join(organizer.pathPlot,organizer.NewImageName + '_plot.jpg'),orientation='portrait',dpi=400)
 
 #%% Run function
 
-CoastSnapPy('egmond','test2.jpg')
+CoastSnapPy('egmond','test2.jpg',outputPath='C:\Github')
