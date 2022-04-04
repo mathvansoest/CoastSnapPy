@@ -212,5 +212,8 @@ class CSrectification():
         #Copies N to fit the shape of the RGB grid
         N = np.tile(images_N, (1, 1, 3))
         
+        #Replace all zeros with NaN
+        N[N==0]=np.nan
+        
         #All grid coordinates without pixel data are assigned a NaN value due to the division by 0 from N:
-        self.im = (images_sumI/N).astype(int)
+        self.im = (images_sumI/N).astype(np.uint8)

@@ -29,20 +29,6 @@ class CSorganizer():
         # Work from main CoastSnap folder
         os.chdir(self.pathCS)
         
-    def check_time(self):
-        #TODO use more elaborte times from image file name
-        
-        # Get current time data
-        now = datetime.now()
-        current_time = now.strftime('.%A.%B.%d_%H.%M.%S_%Y.')
-        self.year = now.strftime('%Y')
-        
-        # Get current epoch time
-        EpochTime = np.round(time.time()).astype(int)
-        
-        # Create new file name
-        self.NewNameTime = np.str(EpochTime) + current_time        
-        
     def check_directories(self):
         
         if self.outputPath == None:
@@ -106,22 +92,56 @@ class CSorganizer():
         self.pathTarget = os.path.join(base, 'Target', self.site)
         self.pathTrans = os.path.join(base, 'Shorelines','Transects')
         self.fileTrans = os.path.join(self.pathTrans, 'SLtransects_' + self.site + '.mat')
-                          
-    def process_new_image(self):
         
-        #TODO check if processed image already exists
+        
+    def check_time(self):
+        #TODO use more elaborte times from image file name
+        
+        # Get current time data
+        now = datetime.now()
+        current_time = now.strftime('.%A.%B.%d_%H.%M.%S_%Y.')
+        self.year = now.strftime('%Y')
+        
+        # Get current epoch time
+        EpochTime = np.round(time.time()).astype(int)
+        
+        # Create new file name
+        self.file_id = np.str(EpochTime) + current_time + self.site
+        
+    def check_filename(self):
+        
+        # Check if file contains keyword .snap
+        keyword = '.snap'
+        if keyword in self.OrImageName:
+            
+            now = datetime.now()
+            self.year = now.strftime('%Y')
+            
+            # Split filename at keyword
+            file_split = self.OrImageName.split('.snap')
+            # Derive file_id and extension
+            self.file_id = file_split[0]
+            self.file_extension = file_split[1]
+            
+        else:
+            self.check_time()
+                          
+    def process_new_image(self,rename=False):
         
         # Copy original file to raw folder
         copy(self.OrImageName, self.pathImRaw)
         
         # Copy original file to processed folder using name convention
-        self.NewImageName = self.NewNameTime + 'snap' + '.jpg'
+        self.NewImageName = self.file_id + '.snap' + '.jpg'
         copy(self.OrImageName, os.path.join(self.pathIm, self.NewImageName))
+        
+        if rename == True:
+            os.rename(self.OrImageName,self.NewImageName)
         
     def process_output_files(self, output_file, output_type):
         
         # Define options for output_type
-        output_type_options = ['reg','rect','SL','Plot']
+        output_type_options = ['.reg','.rect','.SL','.Plot']
         # Check if user defined output_type correctly
         check_count = output_type_options.count(output_type)
         if check_count < 1:
@@ -130,9 +150,9 @@ class CSorganizer():
         
         paths = self.pathReg, self.pathRect, self.pathSL, self.pathPlot
         
-        if output_type != 'SL':
-            NewFileName = self.NewNameTime + output_type + '.jpg'
+        if output_type != '.SL':
+            NewFileName = self.file_id + output_type + '.jpg'
             cv2.imwrite(os.path.join(paths[output_type_options.index(output_type)], NewFileName), output_file)
-        elif output_type == 'SL': 
-            NewFileName = self.NewNameTime + output_type + '.mat'
+        elif output_type == '.SL': 
+            NewFileName = self.file_id + output_type + '.mat'
             scipy.io.savemat(os.path.join(paths[output_type_options.index(output_type)], NewFileName), output_file)

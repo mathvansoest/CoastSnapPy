@@ -9,12 +9,8 @@ import cv2
 import os
 import glob
 import numpy as np
-import matplotlib.pyplot as plt
-from CSreadIm import CSim
-from CSorganizer import CSorganizer
-from CSreadDB import CSreadDB
 from tqdm import tqdm
-from CSdetection import CSdetection
+
 
 #%% Load all reference images
 
@@ -22,14 +18,16 @@ def CSregister(newIm,
                imMask,
                targetDir,
                imPath = os.getcwd(),
-               nfeatures=10000,
+               nfeatures=1000,
+               score_method = 'distance',
                max_distance=False,
                max_distance_value=300,
                same_region=False,
                same_region_threshold=0.2,
-               ransac_threshold=10,
+               ransac_threshold=3,
                homography_confidence=0.95,
-               imMatches=False):
+               imMatches=False,
+               show_progress=True):
 
     # Define file extension, target images should be .jpg's, mask files 
     # should be .png's
@@ -39,15 +37,29 @@ def CSregister(newIm,
     # List all target and mask files
     tar_list = [os.path.basename(x) for x in glob.glob(jpg_extension)]
     mask_list = [os.path.basename(x) for x in glob.glob(png_extension)]
+ 
+    #Initialize ORB features
+    orb = cv2.ORB_create(nfeatures)
+    # Draw keypoints on the Raw new image
+    keypointsR, descriptorsR = orb.detectAndCompute(newIm,mask=imMask)
+    # Determine corner values for new image
+    cornersR = np.array([[0,0],                             
+                         [0,newIm.shape[1]],                 
+                         [newIm.shape[0],0],                 
+                         [newIm.shape[0],newIm.shape[1]],
+                         [newIm.shape[0]/2,newIm.shape[1]/2]])
+    
     
     # intialize empty arrays
     h_all = np.empty([3,3,len(tar_list)])
     h_det_all = np.array([])
+    d_all = np.array([])
     
     # Total iterations
     total_i = len(tar_list)
+    
     # Initialize progress bar
-    with tqdm(total=total_i, leave = True) as pbar:
+    with tqdm(total=total_i, leave = True, disable=not show_progress) as pbar:
     
         # Iterate over all target images
         for i, (tar,mask) in enumerate(zip(tar_list,mask_list)):
@@ -61,11 +73,7 @@ def CSregister(newIm,
             # Load Corresponding Target Mask
             tar_mask = cv2.imread(os.path.join(targetDir,mask), cv2.COLOR_BGR2GRAY)
             
-            #Initialize ORB features
-            orb = cv2.ORB_create(nfeatures)
-            
             # Draw Keypoints
-            keypointsR, descriptorsR = orb.detectAndCompute(newIm,mask=imMask)
             keypointsT, descriptorsT = orb.detectAndCompute(tar_gray,mask=tar_mask)
             
             # Initialize Brute Force matcher
@@ -107,6 +115,7 @@ def CSregister(newIm,
             # TODO only do this for best match
             if imMatches == True:
                 match_im = cv2.drawMatches(newIm, keypointsR, tar_gray, keypointsT, matches,None)
+                return match_im
             
             # Get key points from raw image and target image
             raw_pts = np.float32([keypointsR[m.queryIdx].pt for m in matches])
@@ -114,31 +123,81 @@ def CSregister(newIm,
             
             # Compute homography and store homography matrix in h
             h,_ = cv2.findHomography(raw_pts, target_pts, cv2.RANSAC, ransacReprojThreshold=ransac_threshold, confidence=homography_confidence)
-            # Calculate the determinant of the top left 2x2 cells of the homography matrix 
-            # to check it's stability
-            h_det = np.linalg.det(h)
             
             # Store all homography matrices
             h_all[:,:,i] = h
-            # Store all h_det values
-            h_det_all = np.append(h_det_all,np.array(h_det))
             
-            # Best match is defined by the homography matrix determinant being closest
-            # to one, this is one is selected from h_all to perform warpPerspective
-            best_h_det = np.argmin(abs(1-h_det_all))
-            best_h = h_all[:,:,best_h_det]
+            # Use homography matrix to check euclidean distance between GCPs pixel
+            # location of the target image with the registered image
+            if score_method == 'distance':
+                
+                # Determine corner values for new image
+                cornersT = np.array([[0,0],                                   # Top left                              
+                                     [0,tar_gray.shape[1]],                   # Top right
+                                     [tar_gray.shape[0],0],                   # Bottom left
+                                     [tar_gray.shape[0],tar_gray.shape[1]],   # Bottom right
+                                     [tar_gray.shape[0]/2,tar_gray.shape[1]/2]])# Center
+                
+                # Project corners of raw image
+                projected_cornersR = cv2.perspectiveTransform(cornersR.reshape(cornersT.shape[0],1,2).astype(float),h)
+                projected_cornersR = projected_cornersR.reshape([cornersT.shape[0],2])
+                
+                # Calculate Euclidean distance between corners of the raw and target image
+                dist = sum(np.sqrt((projected_cornersR[:,0]-cornersT[:,0])**2+(projected_cornersR[:,1]-cornersT[:,1])**2))
+                
+                # Store all distance values
+                d_all = np.append(d_all,dist)
+
+            # Use the determinant of the homography matrix to score the registration
+            # of a target image with a new raw image
+            elif score_method == 'h_det':
+                
+                # # Calculate the determinant of the top left 2x2 cells of the homography matrix 
+                # # to check it's stability 
+                h_det = np.linalg.det(h)
+                
+                # Store all h_det values
+                h_det_all = np.append(h_det_all,np.array(h_det))
         
             # Update progress bar after each iteration
             pbar.update(1)
+     
+    # Check the scoring method        
+    if score_method == 'distance':
         
-    best_match_tar = tar_list[best_h_det]   
+        # find index of the lowest summed euclidean distance between target and raw corner values
+        best_d_index = np.argmin(d_all)
+        # find corresponding h_det value
+        best_d_value = d_all[best_d_index]
+        # get the homography matrix for the best match
+        best_h = h_all[:,:,best_d_index]
+        # get the target image with which the best match was found    
+        best_match_tar = tar_list[best_d_index]
+        
+        # Tell which target image resulted in h_det closest to 1
+        print('Best match with %s with a euclidean distance score of %s' % (best_match_tar,str(round(best_d_value,3))))
     
+    # Check the scoring method
+    elif score_method == 'h_det':
+        
+        # find index of the determinant of the homography matrix closest to 1
+        best_h_index = np.argmin(abs(1-h_det_all))
+        # find corresponding h_det value
+        best_h_det_value = h_det_all[best_h_index]
+        # get the homography matrix for the best match
+        best_h = h_all[:,:,best_h_index]
+        # get the target image with which the best match was found    
+        best_match_tar = tar_list[best_h_index]  
+        
+        # Tell which target image resulted in h_det closest to 1
+        print('Best match with %s with a homography determinant score of %s' % (best_match_tar,str(round(best_h_det_value,3))))
+    
+    # load the best match target image
     im_tar = cv2.imread(os.path.join(targetDir,best_match_tar))
         
     # Perform registration
     reg_im = cv2.warpPerspective(newIm,best_h,(im_tar.shape[1],im_tar.shape[0]))    
     
-    # Tell which target image resulted in h_det closest to 1
-    print('\nBest match with %s.' % best_match_tar)
+    
     
     return reg_im, best_match_tar

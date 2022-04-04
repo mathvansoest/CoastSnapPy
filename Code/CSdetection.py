@@ -11,13 +11,10 @@ Created by: Math van Soest
 import cv2
 import os
 import glob
-from imageai.Detection.Custom import CustomObjectDetection
 import numpy as np
-from CSorganizer import CSorganizer
-from CSreadDB import CSreadDB
-from CSreadIm import CSim
 from tqdm import tqdm
-import matplotlib.pyplot as plt
+from imageai.Detection.Custom import CustomObjectDetection
+
 
 class CSdetection:
     def __init__(self, imPath, outPath, Objects, DetectionModels, objPath, ThresholdPercentage = 5):
@@ -48,7 +45,7 @@ class CSdetection:
                 # Load Custom Object Detection information
                 detector = CustomObjectDetection()
                 detector.setModelTypeAsYOLOv3()
-                detector.setModelPath(os.path.join(objpath,"models",self.DetectionModels[self.Objects.index(Object)])) 
+                detector.setModelPath(os.path.join(objpath,"models",self.DetectionModels[self.Objects.index(Object)]))
                 detector.setJsonPath(os.path.join(objpath,"json","detection_config.json"))
                 detector.loadModel()
 
@@ -86,7 +83,8 @@ class CSdetection:
         
         self.imColor = cv2.imread(os.path.join(self.imPath,self.imFileName))
         self.imGray = cv2.cvtColor(self.imColor, cv2.COLOR_BGR2GRAY)
-        self.imMaskMat = np.zeros(np.shape(self.imGray))
+        
+        imMaskMat = np.zeros(np.shape(self.imGray))
         
         for i in range(len(self.points)):
 
@@ -113,15 +111,15 @@ class CSdetection:
                 if y2>np.size(self.imGray,0):y2=np.size(self.imGray,0)
     
             # Create Mask file
-            self.imMaskMat[y1:y2,x1:x2]=255
+            imMaskMat[y1:y2,x1:x2]=255
             
-        self.imMaskMat = self.imMaskMat.astype(np.uint8)
+        self.imMaskMat = imMaskMat.astype(np.uint8)
+        
             
         return self.imMaskMat
     
     def mask_target(self, targetDir):
         
-        print(targetDir)
         # Define file extension, target images should be .jpg's, mask files 
         # should be .png's
         jpg_extension = targetDir + "\*.jpg"
@@ -172,39 +170,3 @@ class CSdetection:
                     
                     # Update progress bar after each iteration
                     pbar.update()
-                
-    
-        
-            
-#%%
-if __name__ == '__main__':
-    
-    #%% Set up with use of CSorganizer
-    new_im='test8.jpg'
-    sitename='egmond'
-    
-    
-    # Use oragnizer class to process new image
-    organizer = CSorganizer(new_im,sitename)
-    organizer.check_time()
-    organizer.check_directories()
-    organizer.gen_paths()
-    organizer.process_new_image()
-    
-    # Retrieve new image file name from organizer class
-    imname = organizer.NewImageName
-
-    #%% Read Database
-    
-    CSdb = CSreadDB(organizer.pathDB, sitename)
-    
-    #%% Input Image
-    
-    # Read the image data
-    im = CSim(imname, path=organizer.pathIm)
-    # Detect the specified for detection with the corresponding models
-    imDetect = CSdetection(imPath=organizer.pathIm,outPath=organizer.pathDetect,objPath=organizer.pathObjects,Objects = CSdb.ObjectNames, DetectionModels = CSdb.ObjectModels)
-    
-    imDetect.mask_target(r"C:\Github\CoastSnap\Target\test")
-
-

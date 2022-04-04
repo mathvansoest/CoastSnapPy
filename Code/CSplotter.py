@@ -18,11 +18,13 @@ class CSplotter():
     def plot_rectSL_xyz(self,rect,SL,CSinput):
         
         plt.figure()
+        plt.ioff()
         plt.plot(SL.x[0,:],SL.y[0,:], color = 'r')
         plt.imshow(rect.im, extent = (min(CSinput.x), max(CSinput.x), max(CSinput.y), min(CSinput.y)))
         plt.xlabel("M")
         plt.ylabel("N")
         plt.gca().invert_yaxis()
         plt.title("Corrected Shoreline (Python)")
+
     
     #TODO def plot_rectSL_UTM(self,rect,SL,CSinput):
