@@ -18,7 +18,7 @@ def CSregister(newIm,
                imMask,
                targetDir,
                imPath = os.getcwd(),
-               nfeatures=1000,
+               nfeatures=5000,
                score_method = 'distance',
                max_distance=False,
                max_distance_value=300,
@@ -31,8 +31,8 @@ def CSregister(newIm,
 
     # Define file extension, target images should be .jpg's, mask files 
     # should be .png's
-    jpg_extension = targetDir + r"\*.jpg"
-    png_extension = targetDir + r"\*.png"
+    jpg_extension = os.path.join(targetDir, r"*.jpg")
+    png_extension = os.path.join(targetDir, r"*.png")
     
     # List all target and mask files
     tar_list = [os.path.basename(x) for x in glob.glob(jpg_extension)]
