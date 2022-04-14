@@ -9,12 +9,12 @@ that means that the exact lay-out should be used for adding new sites.
 
 Created by: Math van Soest
 """
-from CoastSnapPy import organizer
+from organizer import organizer
 import pandas as pd
 import numpy as np
 import glob
 import os
-from CoastSnapPy import getUV
+from getUV import getUV
 
 class readDB:
     
@@ -28,6 +28,11 @@ class readDB:
         self.all_sites = xl_db.sheet_names
         self.data = xl_db.parse(self.sitename)
         self.data2 = self.data.set_index('Station Data')
+    
+    @property
+    def active(self):
+        active = self.data.columns[1]
+        return active
     
     @property
     def x0(self):
@@ -225,11 +230,10 @@ class readDB:
             
         else:
             print('All target images have UV points specified in DataBase')
-        
-if __name__ == '__main__':
-    
-    db = CSreadDB('C:\Github\CoastSnap\Database\CoastSnapDB.xlsx','egmond')
-    
-    UV = db.checkUV('C:\Github\CoastSnap\Target\egmond')
 
+if __name__ == "__main__":
+    
+    path = '~/Documents/CoastSnapPy/Database/CoastSnapPyDB.xlsx'
+    site = 'texel'
+    db = readDB(path,site)
     

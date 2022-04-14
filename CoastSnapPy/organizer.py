@@ -15,6 +15,8 @@ from shutil import copy
 import cv2
 import scipy.io
 
+from pathlib import Path
+
 class organizer():
     
     def __init__(self, OrImageName,site,outputPath=None,CSpath = os.path.dirname(os.getcwd())):
@@ -113,13 +115,13 @@ class organizer():
         
         # Check if file contains keyword .snap
         keyword = '.snap'
-        if keyword in self.OrImageName:
+        if keyword in str(self.OrImageName):
             
             now = datetime.now()
             self.year = now.strftime('%Y')
             
             # Split filename at keyword
-            file_split = self.OrImageName.split('.snap')
+            file_split = str(Path(self.OrImageName).name).split('.snap')
             # Derive file_id and extension
             self.file_id = file_split[0]
             self.file_extension = file_split[1]
@@ -131,10 +133,12 @@ class organizer():
         
         # Copy original file to raw folder
         copy(self.OrImageName, self.pathImRaw)
-        
+
         # Copy original file to processed folder using name convention
         self.NewImageName = self.file_id + '.snap' + '.jpg'
-        copy(self.OrImageName, os.path.join(self.pathIm, self.NewImageName))
+
+        destination = Path(self.pathIm) / Path(self.NewImageName)
+        copy(self.OrImageName, destination)
         
         if rename == True:
             os.rename(self.OrImageName,self.NewImageName)
