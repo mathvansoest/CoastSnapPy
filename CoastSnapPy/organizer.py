@@ -43,7 +43,7 @@ class organizer():
         os.makedirs(os.path.join(self.outputLocation,self.outputDirName),exist_ok=True)
         os.makedirs('Shorelines',exist_ok=True)
         os.makedirs('Database',exist_ok=True)
-        os.makedirs('Code',exist_ok=True)
+        os.makedirs('CoastSnapPy',exist_ok=True)
         os.makedirs('Objects',exist_ok=True)
         os.makedirs('Target',exist_ok=True)
         
