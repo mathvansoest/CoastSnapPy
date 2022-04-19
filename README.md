@@ -75,8 +75,9 @@ Optional input: 	   ThresholdPercentage = 0-100%
 ThresholdPercentage: minimum percentage of assuming that the detection algorithm is correct. If lower then threshold, detection is not assumed to be incorrect. By default it is set to 5%.
 
 ### register
-Optional input:     features = number of keypoints
-                    score_method =  h_det/distance
+Optional input:     
+&nbsp; features = number of keypoints
+&nbsp; score_method =  h_det/distance
                     max_distance = True/False
                     max_distance_value = x amount of pixels
                     same_region = True/False
