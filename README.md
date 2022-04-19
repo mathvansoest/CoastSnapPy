@@ -1,6 +1,6 @@
 # CoastSnapPy - CoastSnap Python
 Contact: Math van Soest (mathvansoest@gmail.com)   
-Created by: Utrecht University
+Created by: Utrecht University  
 More info: CoastSnap.nl
 
 ## About
