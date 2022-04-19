@@ -61,7 +61,12 @@ def CoastSnapPy(sitename,new_im,outputPath=None,show_plots=False):
         im.reg, best_match_tar = register(im.color,
                                           im.mask,
                                           organize.pathTarget,
-                                          show_progress = True)
+                                          show_progress = True,
+                                          nfeatures=1000,
+                                          score_method = 'distance',
+                                          ransac_threshold=10,
+                                          homography_confidence=0.9,
+                                          show_progress=True)
         
         # Read the image data
         ref = readIm(best_match_tar, path=organize.pathTarget)

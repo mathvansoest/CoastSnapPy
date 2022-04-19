@@ -1,7 +1,10 @@
-# -*- coding: utf-8 -*-
+# CoastSnap Python: register new image to target images based on object detection
 """
-Created on Fri Feb 18 10:38:52 2022
-@author: 4105664
+This script aims at accurately registering a new image to existing images of the
+CoastSnap location. This is achieved by using masking features based on object
+detection and the opencv registration modules. 
+
+Created by: Math van Soest
 """
 
 import cv2
@@ -16,7 +19,6 @@ from tqdm import tqdm
 def register(newIm,
                imMask,
                targetDir,
-               imPath = os.getcwd(),
                nfeatures=1000,
                score_method = 'distance',
                max_distance=False,
@@ -27,6 +29,51 @@ def register(newIm,
                homography_confidence=0.9,
                imMatches=False,
                show_progress=True):
+    
+    """
+    The CoastSnapPy registration module. 
+    
+    Necessary input:    newIm (new image file),
+                        imMask (the image mask file), 
+                        targetDir (path to the target images directory)
+                        
+    Optional input:     score_method =  h_det/distance
+                        max_distance = True/False
+                        max_distance_value = x amount of pixels
+                        same_region = True/False
+                        same_region_values = 0-1 part of image
+                        ransac_threshold = x amount of pixels
+                        homography_confidence = 0-1 confidence interval
+                        imMatches = True/False
+                        show_progress = True/False
+                        
+    score_method: allows you to change the way in which the best target image
+    is decided. When usig 'h_det' the determinant of the homography matrix
+    is calculated. When this is close to 1 it is assumed that the matrix is stable
+    and represents an accurate image transformation. When using 'distance' various 
+    pixel points such as the corners and middle of the image are transposed and 
+    checked for their 2D distance projection. When this distance is smallest it is 
+    assumed that the image is registration is stable. 
+    
+    max_distance: only uses keypoints from the cv2.BFmatcher that fall within a 
+    certain distance of one another. This distance is defined by an amount of 
+    pixels in max_distance_value. Best to leave off.
+    
+    same_region: only use keypoints that fall within a certain part of the 
+    image in order to reduce spread of the keypoints used for image registration
+    best to leave off.
+    
+    ransac_threshold: used in cv2.findHomography. Maximum allowed reprojection 
+    error to treat a point pair as an inlier (used in the RANSAC method only).
+    
+    homography_confidence: confidence threshold for using a keypoint match
+    
+    imMatches: print image the shows the matched keypoints
+    
+    show_progress: show progress bar when iterating over eacht of the target
+    images specified in the target directory. 
+   
+    """
 
     # Define file extension, target images should be .jpg's, mask files 
     # should be .png's

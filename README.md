@@ -1,7 +1,7 @@
-CoastSnapPy - CoastSnap Python
+# CoastSnapPy - CoastSnap Python
 Contact: Math van Soest (mathvansoest@gmail.com) Created by: Utrecht University
 
-About
+## About
 This is an automated version of the original CoastSnap code as written in Matlab. MATLAB based code for registration and shoreline extraction can be found on Github.
 
 It was developped in conjuction with the coastsnap.nl webapplication. It allows users to instantly share and process a photo taken from a CoastSnap station with our servers from Utrecht University. Automation of shoreline extraction is based on image registration and object detection.
@@ -41,6 +41,9 @@ How to intialize a new CoastSnap location
 Settting up CoastSnapPyDB
 To start you need to copy the 'egmond' sheet from the 'Database/CoastSnapPy.xlsx' file. Make sure that all cells remain in the same location (e.g. "Station Data" in A1). Then fill in the Station Data, Rectification Settings, Tide Data, Shoreline Mapping Settings, Ground Control Points, GCP Rectification Combo. Object Detection and GCP's target image can be left blank for now. 
 
+Active vs. Passive
+In your CoastSnapPy.xlsx you can define whether a site is active or not. When you are retrieving images from a CoastSnap location where no database of images has been collected yet, you are not yet able to make use of the automated image processing. But you can use the data structure to organise the new incoming images. If this is the case you define cell A2 as 'INACTIVE'. When you have trained the object detection and have sufficient target images you can change this to 'ACTIVE' when the main function is then ran, the code will try derive the shoreline position from your CoastSnaps. 
+
 Training object detection
 Next you need to find stable objects in your image frame and train the AI object detection to find and isolate the stable features. This process is clearly explained on: https://medium.com/deepquestai/train-object-detection-ai-with-6-lines-of-code-6d087063f6ff. Note: in order to have reliable training data you need a database of images already taken from your new CoastSnap location. For egmond we used 100 training images and 23 validating images. This works very reliably. It can probably be done with less. 
 
@@ -53,6 +56,15 @@ In order to achieve the most accurate image registration, multiple target images
 When adding the images the code will check two things: if every target image has a corresponding target..._mask.png and if de GCP's pixel location is defined in the CoastSnapPyDB.xlsx. If the target image is non existent, this will be generated using the objects as defined in the CoastSnapPyDB.xlsx. If the pixel values are non existent the user will be present a GUI where the pixel location can be defined by clicking on them, similar to the original Matlab code. The image without the GCP pixel location is presenten. By dragging the mouse you can zoom in. Then after pressing any button you can click on the location of the GCP. The pixel coordinates are then copied onto the clipboard and can be pasted in the CoastSnapDB.xlsx. 
 
 Options
+Most optional functionality of the code is determined in the main.py file. The main function has two optional argument: 'output_path' and 'show_progress' 
+	- ouput_path: if a path is defined for this argument all output that is usually stored in the 	
+	images folder is then stored a folder called 'CSoutput' at the specified location. This 
+	allows you to decouple the location of the CoastSnapPy output from the working directory of 
+	the code. 
+	- show_progress: a progress bar is printed for the image registration module. When this is 
+	set to false the progress bar is not printed. 
+
+
 
 
 

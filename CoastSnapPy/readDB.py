@@ -230,10 +230,4 @@ class readDB:
             
         else:
             print('All target images have UV points specified in DataBase')
-
-if __name__ == "__main__":
-    
-    path = '~/Documents/CoastSnapPy/Database/CoastSnapPyDB.xlsx'
-    site = 'texel'
-    db = readDB(path,site)
     
