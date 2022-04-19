@@ -1,5 +1,5 @@
 # CoastSnapPy - CoastSnap Python
-Contact: Math van Soest (mathvansoest@gmail.com) 
+Contact: Math van Soest (mathvansoest@gmail.com)   
 Created by: Utrecht University
 
 ## About
