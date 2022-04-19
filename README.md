@@ -76,8 +76,8 @@ ThresholdPercentage: minimum percentage of assuming that the detection algorithm
 
 ### register
 Optional input:     
-&nbsp; features = number of keypoints
-&nbsp; score_method =  h_det/distance
+&nbsp;&nbsp; features = number of keypoints;
+&nbsp;&nbsp; score_method =  h_det/distance;
                     max_distance = True/False
                     max_distance_value = x amount of pixels
                     same_region = True/False
