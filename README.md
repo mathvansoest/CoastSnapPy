@@ -62,30 +62,32 @@ When adding the images the code will check two things: if every target image has
 ### main
 Most optional functionality of the code is determined in the main.py file. 
 
-Optional input: 	  output_path = None/path to desired location
-		  show_progress = True/False
+Optional input: 	  
+		  output_path = None/path to desired location  
+		  show_progress = True/False  
 	
 ouput_path: if a path is defined for this argument all output that is usually stored in the 	images folder is then stored a folder called 'CSoutput' at the specified location. This allows you to decouple the location of the CoastSnapPy output from the working directory of the code. 
 
 show_progress: a progress bar is printed for the image registration module. When this is set to false the progress bar is not printed.
 
 ### detection
-Optional input: 	   ThresholdPercentage = 0-100%
+Optional input: 	   
+		   ThresholdPercentage = 0-100%
 
 ThresholdPercentage: minimum percentage of assuming that the detection algorithm is correct. If lower then threshold, detection is not assumed to be incorrect. By default it is set to 5%.
 
 ### register
 Optional input:     
-&nbsp;&nbsp; features = number of keypoints   
-&nbsp;&nbsp; score_method =  h_det/distance  
-                    max_distance = True/False
-                    max_distance_value = x amount of pixels
-                    same_region = True/False
-                    same_region_values = 0-1 part of image
-                    ransac_threshold = x amount of pixels
-                    homography_confidence = 0-1 confidence interval
-                    imMatches = True/False
-                    show_progress = True/False
+		   nfeatures = number of keypoints   
+		   score_method =  h_det/distance  
+                    max_distance = True/False  
+                    max_distance_value = x amount of pixels  
+                    same_region = True/False  
+                    same_region_values = 0-1 part of image  
+                    ransac_threshold = x amount of pixels  
+                    homography_confidence = 0-1 confidence interval  
+                    imMatches = True/False  
+                    show_progress = True/False  
                         
 nfeatures: the amount of keypoints you want the registration algorithm to draw on both the new and possible target images. The more you define the slower the algorithm becomes, this is not a linear relation. Thus increasing the number twice does not increase computational time twice. Recommended as little as produces stable registration. Recommenced between 1000-100000. 
 
