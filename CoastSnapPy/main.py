@@ -1,6 +1,8 @@
 # CoastSnap Python: This is the main script of the algorithm
 """
-This script import all of the classes and function for CoastSnap Python to operate
+This script is the Main CoastSnapPy function. 
+It imports all of the classes and functions for CoastSnap Python to operate.
+
 Created by: Math van Soest
 """
 
@@ -75,7 +77,7 @@ def CoastSnapPy(sitename,new_im,outputPath=None,show_plots=False):
         
         # Georectification   
         rect = rectification(db,im,db.UV,registeredIm = True)
-             
+        
         # Shoreline Mapping
         SL = mapSL(organize.fileTrans,db,im,rect)
     
@@ -114,4 +116,4 @@ def CoastSnapPy(sitename,new_im,outputPath=None,show_plots=False):
 
 #%% Run function
 if __name__ == "__main__":
-    user_plot = CoastSnapPy('egmond','test1.jpg',show_plots=True)
+    user_plot = CoastSnapPy('pettennoord','TestImages/petten1.jpg',show_plots=True)

@@ -54,26 +54,21 @@ class mapSL():
                     The numbers used below are the values of the above from the Manly Database.
                     '''
                     ##MATH## Given the info above, the values below should be linked to the Database and not be fixed at the same values as the Manly site.
-
-                    # M1 is the the row index of the trasect start point.
-                    M1 = self.transectsY[0,i]
-                    # M1 is converted from the world coordinate. In this case the row index is 2*ycoordinate (see (Heaney, 2021, page 57))
-                    M1 = (M1*2)
-                    # M2 is the the row index of the trasect end point.
-                    M2 = self.transectsY[1,i]
-                    # M2 is converted from the world coordinate in the same way M1 is.
-                    M2 = (M2*2)
-                    # N1 is the the column index of the trasect start point.
-                    N1 = self.transectsX[0,i]
-                    # N1 is converted from the world coordinate. In this case the column index is 2*(xcoordinate + 400) (see (Heaney, 2021, page 57))
-                    N1 = ((N1 + 400) * 2)
-                    # N2 is the the column index of the trasect end point.
-                    N2 = self.transectsX[1,i]
-                    # N2 is converted from the world coordinate in the same way N1 is.
-                    N2 = ((N2 + 400) * 2)
+                    
+                    y = self.transectsY
+                    x = self.transectsX
+                    
+                    y = (y - CSinput.ylim[0]) * 1/CSinput.dxdy
+                    x = (x - CSinput.xlim[0]) * 1/CSinput.dxdy
+                    
+                    
+                    y1 = y[0,i]
+                    y2 = y[1,i]
+                    x1 = x[0,i]
+                    x2 = x[1,i]
 
                     # Now pixels are sampeled along the transects using the function "profile_line"
-                    prof = profile_line(CSrect.im, (M1, N1), (M2, N2),mode = 'constant')
+                    prof = profile_line(CSrect.im, (y1, x1), (y2,x2),mode = 'constant')
                     # Append the ssample pixel data to the array P
                     P = np.append(P, prof, axis = 0)
             
@@ -142,11 +137,14 @@ class mapSL():
             # The pixels to be masked are assigned the NaN value.
             RminusBdouble[Imask] = np.nan
             
+            self.RmB = RminusBdouble
             # Now locate the contours of pixels containing the RmB threshold corresponding to the shoreline.
 
             # thresh is the RmB threshold
             # c holds the location data of the contours
             c = find_contours(RminusBdouble,thresh)
+            
+            self.c = c
             
             # The are multiple contours identified to the one corresponding to the shoreline is identified as the longest.
             # c_lenths is created to hold the data about the number of verties in each contour and hence their lengths.
@@ -162,13 +160,15 @@ class mapSL():
             # Extract the location data from the longest contour.
             xyz_x = c[longest_contour_loc][:,1]
             xyz_y = c[longest_contour_loc][:,0]
-            
+
             # Convert from pixel coords into grid coordinates
             xyz_x = xyz_x*(np.array(abs(CSinput.xlim[0]-CSinput.xlim[1]))/CSrect.im.shape[1])+np.array(CSinput.xlim[0])
-            xyz_y = xyz_y*(np.array(abs(CSinput.ylim[0]-CSinput.ylim[1]))/CSrect.im.shape[0])
+            xyz_y = xyz_y*(np.array(abs(CSinput.ylim[0]-CSinput.ylim[1]))/CSrect.im.shape[0])+np.array(CSinput.ylim[0])
             
             # Stack coordinates
             slpoints = np.vstack((xyz_x,xyz_y)).T
+            
+            self.slpoints = slpoints
             
             # Initialize empty arrays
             slx = np.zeros((1,self.transectsX.shape[1]))
@@ -176,18 +176,34 @@ class mapSL():
             angle =np.empty(slx.shape)
             
             # Select most shoreward RmB threshold if multiple are detected along transect
+            # Select most shoreward RmB threshold if multiple are detected along transect
             for i in range(slx.shape[1]):
                 
                 angle = np.arctan(np.diff(self.transectsY[:,i]/np.diff(self.transectsX[:,i])))
+
                 anglemat = np.array([[np.cos(angle), -np.sin(angle)],[np.sin(angle), np.cos(angle)]])[:,:,0]
-                slpoints_new = slpoints - np.matlib.repmat([self.transectsX[0,i], self.transectsY[0,i]], slpoints.shape[0], 1)
+                
+                # Check wich of the transect points is north from the other 
+                # if angle<=0:
+                #     rotation_point_x = self.transectsX[0,i]
+                #     rotation_point_y = self.transectsY[0,i]
+                # elif angle>0:
+                #     rotation_point_x = self.transectsX[1,i]
+                #     rotation_point_y = self.transectsY[1,i]
+                
+                rotation_point_x = self.transectsX[0,i]
+                rotation_point_y = self.transectsY[0,i]
+                
+                slpoints_new = slpoints - np.matlib.repmat([rotation_point_x, rotation_point_y], slpoints.shape[0], 1)
                 points_rot = slpoints_new@anglemat
                 max_distance = np.sqrt(np.diff(self.transectsY[:,i])**2+np.diff(self.transectsX[:,i])**2)
-            
+                
                 I = np.array(np.where((points_rot[:,1]>-1) & (points_rot[:,1]<1) & (points_rot[:,0]>0) & (points_rot[:,0]<max_distance)))
                 
                 if  np.array(I).size == 0:
-                    I = float("NaN")
+                    I = np.array([np.nan])
+                    slx[0,i]= np.nan
+                    sly[0,i]= np.nan
                 else:    
                     Imin = np.argmin(points_rot[I,0])
                     slx[0,i]= slpoints[I[0,Imin],0]

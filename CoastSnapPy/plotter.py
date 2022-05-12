@@ -18,18 +18,18 @@ class plotter():
         self = self
         self.show_plots = show_plots
     
-    def rectSL_xyz(self,rect,SL,CSinput):
+    def rectSL_xyz(self,rect,SL,db):
         
         if self.show_plots == False:
             plt.ioff()
             
         plt.figure()
         plt.plot(SL.x[0,:],SL.y[0,:], color = 'r')
-        plt.imshow(rect.im, extent = (min(CSinput.x), max(CSinput.x), max(CSinput.y), min(CSinput.y)))
-        plt.xlabel("M")
-        plt.ylabel("N")
+        plt.imshow(rect.im, extent = (min(db.x), max(db.x), max(db.y), min(db.y)))
+        plt.xlabel("Noord [m]")
+        plt.ylabel("Oost [m]")
         plt.gca().invert_yaxis()
-        plt.title("Measured Shoreline")
+        plt.title("Waterlijn")
         plt.ion()
 
     def ref(self,ref):
@@ -52,6 +52,34 @@ class plotter():
         plt.plot(db.UV[0,:], db.UV[1,:],'go', markersize = 3)
         plt.scatter(rect.UV_pred[0,:], rect.UV_pred[1,:], s=80, facecolors='none', edgecolors='r')
         plt.title("Registered image with GCP's")
+        plt.ion()
+        
+    def rect(self,rect,db,transect):
+        
+        if self.show_plots == False:
+            plt.ioff()
+        
+        trans = scipy.io.loadmat(transect)['SLtransects']
+        
+        x = trans['x'][0][0].astype(float)
+        y = trans['y'][0][0].astype(float)
+        plt.figure()
+        plt.plot(x,y)
+        plt.imshow(rect.im, extent = (min(db.x), max(db.x), max(db.y), min(db.y)))
+        plt.xlabel("M")
+        plt.ylabel("N")
+        plt.gca().invert_yaxis()      
+        plt.ion()
+        
+        x = (x - db.xlim[0]) * 1/db.dxdy
+        y = (y - db.ylim[0]) * 1/db.dxdy
+        
+        plt.figure()
+        plt.plot(x,y)
+        plt.imshow(rect.im)
+        plt.xlabel("M")
+        plt.ylabel("N")
+        plt.gca().invert_yaxis()      
         plt.ion()
         
     def trend(self,pathSL,transect,trend_points=20):

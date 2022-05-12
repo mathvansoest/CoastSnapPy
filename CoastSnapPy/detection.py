@@ -35,7 +35,7 @@ class detection:
         self.points = np.zeros([self.nObjects,4])
         
         # Check if number of specified objects matches the number of specified detection models
-        if np.size(self.Objects) and np.size(self.DetectionModels) == np.size(self.Objects):
+        if np.size(self.Objects) and np.size(self.DetectionModels) == np.size(self.Objects) and self.Objects != ['nan']:
             # Perform Detection for each of the specified objects
             for Object in self.Objects:
                 objpath = os.path.join(os.path.abspath(self.objPath), Object)
@@ -75,6 +75,11 @@ class detection:
                 print('not all objects were found in the picture')
                 
             return self.points
+        
+        elif self.Objects == ['nan']:
+            
+            imshape = cv2.imread(os.path.join(self.imPath,self.imFileName)).shape
+            self.points = np.array([0,0,imshape[1],imshape[0]]).reshape([1,4])
                 
         else:
             print('No objects for detection were specified or the amount of specified objects does not correspond with the amount of specified models')
@@ -122,8 +127,8 @@ class detection:
         
         # Define file extension, target images should be .jpg's, mask files 
         # should be .png's
-        jpg_extension = targetDir + "\*.jpg"
-        png_extension = targetDir + "\*.png"
+        jpg_extension = os.path.join(targetDir, "*.jpg")
+        png_extension = os.path.join(targetDir, "*.png")
         
         # List all target and mask files
         file_list = [os.path.splitext(os.path.basename(x))[0] for x in glob.glob(jpg_extension)]

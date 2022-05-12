@@ -80,7 +80,7 @@ class rectification():
             #note: instead of np.tranpose, an alternative is to place ".T" after the object to be transposed.
             #I keep np.transpose since this makes is more obvious to someone analysing the code.
             UV = np.matmul(P,np.vstack((np.transpose(xyz), np.ones((1, len(xyz)), dtype = float))))
-        
+            
             UV = UV/np.matlib.repmat(UV[2,:],3,1)
             UV = np.transpose(np.concatenate((UV[0,:], UV[1,:])))
             return UV
@@ -89,7 +89,7 @@ class rectification():
                 
             Umin = 1
             Vmin = 1
-        
+
             #Column of zeros, same length as UV(from the grid) (ie one for each coord set)
             yesNo = np.zeros((len(U),1))
             #Gives at 1 for all the UV coords which have existing corresponding pixel values from the oblique image
@@ -163,9 +163,8 @@ class rectification():
         xyz = np.column_stack((self.CSinput.Xgrid.T.flatten(), self.CSinput.Ygrid.T.flatten(), np.matlib.repmat(self.z, len(self.CSinput.Xgrid.T.flatten()), 1)))
         
         #All xyz coordinates in the grid are given their corresponding UV coordinates which are rounded to nearest integer
-        UV = np.around(findUV6DOF(xyz, self.beta6[0], self.beta6[1], self.beta6[2], self.beta6[3], self.beta6[4], self.beta6[5]))
-        
-        #All xyz coordinates in the grid are given their corresponding UV coordinates which are rounded to nearest integer
+        UV = findUV6DOF(xyz, self.beta6[0], self.beta6[1], self.beta6[2], self.beta6[3], self.beta6[4], self.beta6[5])
+
         UV = np.around(UV.astype('float'))
         
         #Order='F' means the reshape is done column by column.

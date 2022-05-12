@@ -9,11 +9,12 @@ that means that the exact lay-out should be used for adding new sites.
 
 Created by: Math van Soest
 """
-from organizer import organizer
+
 import pandas as pd
 import numpy as np
 import glob
 import os
+import sys
 from getUV import getUV
 
 class readDB:
@@ -157,12 +158,12 @@ class readDB:
     @property
     def ObjectNames(self):
         ObjectNames = self.data2.loc['Object Names'].iloc[0]
-        return ObjectNames.split(',')
+        return str(ObjectNames).split(',')
     
     @property
     def ObjectModels(self):
         ObjectModels = self.data2.loc['Models'].iloc[0]
-        return ObjectModels.split(',')
+        return str(ObjectModels).split(',')
     
     @property
     def RefImage(self):
@@ -193,11 +194,11 @@ class readDB:
         provide them. 
         """
         # Get target images
-        jpg_extension = targetDir + "\*.jpg"
+        jpg_extension = os.path.join(targetDir, "*.jpg")
         
         # List all target and mask files
         target_list = [os.path.basename(x) for x in glob.glob(jpg_extension)]
-        
+
         # See which target images exist in database
         db_list = self.data2.index[self.data.iloc[:,0].isin(target_list)].tolist()
         
@@ -215,18 +216,15 @@ class readDB:
                 # Add UVx and UVy
                 UVxl_new = np.hstack([[['UVx'],['UVy']],UV])
                 # Add target_image file name 
-                UVxl_new = np.vstack([np.hstack([np.array([tar]),np.tile(np.nan,3)]),UVxl_new])
+                UVxl_new = np.vstack([np.hstack([np.array([tar]),np.tile(np.nan,len(self.GCPsCombo))]),UVxl_new])
                 
                 UVxl = UVxl.append(pd.DataFrame(UVxl_new))            
             
             UVxl.to_clipboard(index=False,header=False)
             
-            
             print('New UV points have been copied on clipboard and should be pasted in your xcel-database')
             
-            return UVxl
-            
-            exit()
+            sys.exit()
             
         else:
             print('All target images have UV points specified in DataBase')

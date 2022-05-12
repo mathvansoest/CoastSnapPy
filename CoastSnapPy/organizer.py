@@ -86,7 +86,7 @@ class organizer():
         self.pathDB = os.path.join(base, 'Database', 'CoastSnapPyDB.xlsx')
         self.pathIm = os.path.join(baseIm, self.outputDirName, self.site, 'Processed', self.year)
         self.pathImRaw = os.path.join(baseIm, self.outputDirName, self.site, 'Raw', self.year)
-        self.pathReg =  os.path.join(baseIm, self.outputDirName, self.site, 'Registered' + self.year)
+        self.pathReg =  os.path.join(baseIm, self.outputDirName, self.site, 'Registered', self.year)
         self.pathRect = os.path.join(baseIm, self.outputDirName, self.site, 'Rectified', self.year)
         self.pathDetect = os.path.join(baseIm, self.outputDirName, self.site, 'Detected', self.year)
         self.pathPlot = os.path.join(baseIm, self.outputDirName, self.site, 'Plots', self.year)
@@ -98,7 +98,6 @@ class organizer():
         
         
     def check_time(self):
-        #TODO use more elaborte times from image file name
         
         # Get current time data
         now = datetime.now()
@@ -157,7 +156,7 @@ class organizer():
         
         if output_type != '.SL':
             NewFileName = self.file_id + output_type + '.jpg'
-            cv2.imwrite(os.path.join(paths[output_type_options.index(output_type)], NewFileName), output_file)
+            cv2.imwrite(os.path.join(paths[output_type_options.index(output_type)], NewFileName), cv2.cvtColor(output_file, cv2.COLOR_RGB2BGR))
         elif output_type == '.SL': 
             NewFileName = self.file_id + output_type + '.mat'
             scipy.io.savemat(os.path.join(paths[output_type_options.index(output_type)], NewFileName), output_file)
