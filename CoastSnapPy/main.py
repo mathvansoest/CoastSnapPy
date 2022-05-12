@@ -67,7 +67,7 @@ def CoastSnapPy(sitename,new_im,outputPath=None,show_plots=False):
                                           score_method = 'distance',
                                           ransac_threshold=10,
                                           homography_confidence=0.9,
-                                          show_progress=True)
+                                          show_progress=False)
         
         # Read the image data
         ref = readIm(best_match_tar, path=organize.pathTarget)
@@ -116,4 +116,4 @@ def CoastSnapPy(sitename,new_im,outputPath=None,show_plots=False):
 
 #%% Run function
 if __name__ == "__main__":
-    user_plot = CoastSnapPy('pettennoord','TestImages/petten1.jpg',show_plots=True)
+    user_plot = CoastSnapPy('pettennoord','TestImages/petten1.jpg',show_plots=False)
