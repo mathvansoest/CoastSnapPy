@@ -113,7 +113,3 @@ def CoastSnapPy(sitename,new_im,outputPath=None,show_plots=False):
         
     # Return the final plot file    
     return user_plot_file
-
-#%% Run function
-if __name__ == "__main__":
-    user_plot = CoastSnapPy('pettennoord','TestImages/petten1.jpg',show_plots=False)
