@@ -21,6 +21,7 @@ def register(newIm,
                targetDir,
                nfeatures=1000,
                score_method = 'distance',
+               distance_threshold = 10000,
                max_distance=False,
                max_distance_value=50,
                same_region=False,
@@ -38,6 +39,7 @@ def register(newIm,
                         targetDir (path to the target images directory)
                         
     Optional input:     score_method =  h_det/distance
+                        distance_threshold = 10000
                         max_distance = True/False
                         max_distance_value = x amount of pixels
                         same_region = True/False
@@ -53,7 +55,11 @@ def register(newIm,
     and represents an accurate image transformation. When using 'distance' various 
     pixel points such as the corners and middle of the image are transposed and 
     checked for their 2D distance projection. When this distance is smallest it is 
-    assumed that the image is registration is stable. 
+    assumed that the image is registration is stable.
+    
+    distance_threshold = is the maximum euclidean distance score that is 
+    considered the represent a stable registration. By default this is set to
+    10000, but could be as low as 5000.
     
     max_distance: only uses keypoints from the cv2.BFmatcher that fall within a 
     certain distance of one another. This distance is defined by an amount of 
@@ -215,6 +221,11 @@ def register(newIm,
         best_d_index = np.argmin(d_all)
         # find corresponding h_det value
         best_d_value = d_all[best_d_index]
+        
+        # If threshold of euclidean distance is exceeded push error
+        if best_d_value > distance_threshold:
+            raise ValueError('The euclidean distance value has surpassed the threshold. This means that registering went wrong, retake or use another image.')
+        
         # get the homography matrix for the best match
         best_h = h_all[:,:,best_d_index]
         # get the target image with which the best match was found    
@@ -236,7 +247,7 @@ def register(newIm,
         best_match_tar = tar_list[best_h_index]  
         
         # Tell which target image resulted in h_det closest to 1
-        print('Best match with %s with a homography determinant score of %s' % (best_match_tar,str(round(best_h_det_value,3))))
+        print('/n Best match with %s with a homography determinant score of %s' % (best_match_tar,str(round(best_h_det_value,3))))
     
     # load the best match target image
     im_tar = cv2.imread(os.path.join(targetDir,best_match_tar))
