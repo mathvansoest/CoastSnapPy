@@ -28,7 +28,7 @@ Use the "cd" command to acces the CoastSnap directory in the Console.
 Initialize the conda evironment running the following command in the Spyder console: "conda env -f create environment.yml" 
 
 --step5-- 
-Set the python interpreter to run within the newly created environment. In Spyder go to  "preferences ". Then "Python Interpreter", following select "Use the following python interpreter", then select "~coastsnappy/bin/python"  
+Enable the environment using the anaconda navigator. Click on "environments" then select "coastsnappy", go back to "Home" and launch Spyder. After Spyder is launched you should adjust the following setting. Go to "preferences" -> "IPython console" and then set "Graphics Backend" to "Automatic"  
 
 --step6--
 Download the object detection used for our NL CoastSnap Location Egmond from: ...
@@ -49,7 +49,7 @@ To start you need to copy the 'egmond' sheet from the 'Database/CoastSnapPy.xlsx
 In your CoastSnapPy.xlsx you can define whether a site is active or not. When you are retrieving images from a CoastSnap location where no database of images has been collected yet, you are not yet able to make use of the automated image processing. But you can use the data structure to organise the new incoming images. If this is the case you define cell A2 as 'INACTIVE'. When you have trained the object detection and have sufficient target images you can change this to 'ACTIVE' when the main function is then ran, the code will try derive the shoreline position from your CoastSnaps. 
 
 ### 3.Training object detection
-Next you need to find stable objects in your image frame and train the AI object detection to find and isolate the stable features. This process is clearly explained on: https://medium.com/deepquestai/train-object-detection-ai-with-6-lines-of-code-6d087063f6ff. Note: in order to have reliable training data you need a database of images already taken from your new CoastSnap location. For egmond we used 100 training images and 23 validating images. This works very reliably. It can probably be done with less. 
+Next, if your the coastal setting in your image frame is highly dynamic you need to find stable objects in your image frame and train the AI object detection to find and isolate the stable features. If you don't want to use this feature set your xlsx database to "nan" (see texel/pettennoord). This process is clearly explained on: https://medium.com/deepquestai/train-object-detection-ai-with-6-lines-of-code-6d087063f6ff. Note: in order to have reliable training data you need a database of images already taken from your new CoastSnap location. For egmond we used 100 training images and 23 validating images. This works very reliably. It can probably be done with less. 
 
 ### 4.Adding detection models
 Once you have trained and evaluated the detection models you have to select the detection model with the mAP closest to 1. Copy the created folder for your custom object to "CoastSnapPy/Objects/your_object". Define the name of the object in the CoastSnapPyDB.xlsx next to Object Names. When using multiple add these (e.g. "restaurant,stairs,rock"). Next to models define the detection model to be used for each object you want to detect (e.g. "detection_model-ex-05--loss-5.26.h5"). When using multiple objects, make sure you define them in the same order as the objects specified in te cell above. 
