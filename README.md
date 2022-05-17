@@ -31,8 +31,10 @@ Initialize the conda evironment running the following command in the Spyder cons
 Enable the environment using the anaconda navigator. Click on "environments" then select "coastsnappy", go back to "Home" and launch Spyder. After Spyder is launched you should adjust the following setting. Go to "preferences" -> "IPython console" and then set "Graphics Backend" to "Automatic"  
 
 --step6--
-Download the object detection used for our NL CoastSnap Location Egmond from: ...
-Paste ....h5 in "CoastSnapPy/Objects/egmond/strandtent/models and paste YOUR_DECTECTION_MODEL.h5 in "CoastSnapPy/Objects/egmond/zilvermeeuw/models.
+Download the object detection used for our NL CoastSnap Location Egmond from: https://surfdrive.surf.nl/files/index.php/s/EotHj8KMqoRPWVC 
+
+- Paste detection_model-ex-016--loss-0008.891.h5 in "CoastSnapPy/Objects/egmond/strandtent/models
+- paste detection_model-ex-005--loss-0016.168.h5 in "CoastSnapPy/Objects/egmond/zilvermeeuw/models
 
 --step7--
 Run CSmain.py with the test images form our CoastSnap site Egmond, the Netherlands to see if it is working!
