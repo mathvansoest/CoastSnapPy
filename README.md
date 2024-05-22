@@ -37,7 +37,7 @@ Download the object detection used for our NL CoastSnap Location Egmond from: ht
 - paste detection_model-ex-005--loss-0016.168.h5 in "CoastSnapPy/Objects/egmond/zilvermeeuw/models
 
 --step7--
-Run CSmain.py with the test images form our CoastSnap site Egmond, the Netherlands to see if it is working!
+Run main.py with the test images form our CoastSnap site Egmond, the Netherlands to see if it is working!
 
 ## How does CoastSnapPy work
 
